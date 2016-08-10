@@ -2,6 +2,31 @@
 
 //NB this will need to be split in AC and synth classes if there are multiple sound streams
 
+var files = [
+'138344_reverse_crow.wav',
+'169830_dino009.wav',
+'19997_blackbird.wav',
+'19997_blackbird_flap.wav',
+'20472_woodpigeonnr_01.wav',
+'20472_woodpigeonnr_02.wav',
+'20472_woodpigeonnr_03.wav',
+'235443_sandhill-crane.wav',
+'240476_wings_.wav',
+'262307__steffcaffrey__cat-happy-purr-twitter2.wav',
+'262308__steffcaffrey__cat-happy-purr-twit3.wav',
+'262310__steffcaffrey__cat-purr-twit5.wav',
+'262311__steffcaffrey__cat-purr-twit6.wav',
+'278903__syntheway__guardians-of-limbo-syntheway-magnus-choir-vsti.wav',
+'319512_pigeon_low.wav',
+'319512_pigeon_select.wav',
+'57271_cat-bird.wav',
+'66637_crying-baby-2.wav',
+'66637_crying-baby-2b.wav',
+'66637_crying-baby-3.wav',
+'66637_crying-baby-4.wav',
+'66637_crying-baby-select.wav',
+];
+
 var Sound = function(){
 
 //GLOBALS
@@ -22,30 +47,7 @@ var Sound = function(){
   this.isUnlocked = false;
 
 
-  this.files = [
-  '138344_reverse_crow.wav',
-  '169830_dino009.wav',
-  '19997_blackbird.wav',
-  '19997_blackbird_flap.wav',
-  '20472_woodpigeonnr_01.wav',
-  '20472_woodpigeonnr_02.wav',
-  '20472_woodpigeonnr_03.wav',
-  '235443_sandhill-crane.wav',
-  '240476_wings_.wav',
-  '262307__steffcaffrey__cat-happy-purr-twitter2.wav',
-  '262308__steffcaffrey__cat-happy-purr-twit3.wav',
-  '262310__steffcaffrey__cat-purr-twit5.wav',
-  '262311__steffcaffrey__cat-purr-twit6.wav',
-  '278903__syntheway__guardians-of-limbo-syntheway-magnus-choir-vsti.wav',
-  '319512_pigeon_low.wav',
-  '319512_pigeon_select.wav',
-  '57271_cat-bird.wav',
-  '66637_crying-baby-2.wav',
-  '66637_crying-baby-2b.wav',
-  '66637_crying-baby-3.wav',
-  '66637_crying-baby-4.wav',
-  '66637_crying-baby-select.wav',
-  ]
+  this.file = files[0];
 
   this.parameters =
   {
@@ -101,8 +103,7 @@ var Sound = function(){
     }
 
 
-
-    this.loadSample("samples/" + this.files[0]);
+    this.loadSample("samples/" + this.file);
 
 
   }

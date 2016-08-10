@@ -24,9 +24,11 @@ var blobFragmentShader = `
   uniform float slices; //theta wise repeat (outer only)
   uniform float segments; //rho wise repeat
   uniform float c_size; //proportional size of center
+  uniform float c_scale;
   uniform float o_amp; //amp of noise
   uniform float o_step; //the noise step of the outer edge
   uniform float c_amp;
+  uniform float cell_detail; //how to spread the cells
   uniform float theta_warp;
   uniform vec2 move_distort; //for irregular acceleration
   uniform float move_mul;
@@ -80,20 +82,25 @@ var blobFragmentShader = `
           for(int i = 0; i < 4; i++)
           {
 
-            vec2 v = vec2(0. , float(i) * .25 );
-            vec2 d = vec2(hash(float(i) + seed) * cell_detune * .25, hash(float(i) + seed * 2.) + cell_detune * .25);
-      c = min(c, drawShape(p - v + d));
+            float r1 = -1.0 * hash(float(i) + seed) * 2.0;
+            float r2 = -1.0 + hash(float(i) + seed * 2.) * 2.0;
+            vec2 v = vec2(0.5 + float(i) * .25, 0.5 );
+            vec2 d = vec2(r1 * cell_detune * .25, r2 * cell_detune * .25);
+            float l = drawShape(p - v + d);
+            c = min(c, l + float(i) * cell_detail * 0.05);
 
-        }
+          }
 
-        for(int i = 0; i < 4; i++)
+          for(int i = 0; i < 4; i++)
           {
-
+            float r1 = -1.0 * hash(float(i) + seed * 1.1) * 2.0;
+            float r2 = -1.0 + hash(float(i) + seed * 2.1) * 2.0;
             vec2 v = vec2(.25 + .5 * mod(float(i),2.), .25 + .5 * floor(float(i)/2.) );
-            vec2 d = vec2(hash(float(i) + seed * 1.1) *  -cell_detune + cell_detune/2., hash(float(i) + seed * 2.1) * -cell_detune + cell_detune/2.);
-      c = min(c, drawShape(vec2(p - v + d) * (1.25 + 0.25 * hash(seed) ) ));
+            vec2 d = vec2(r1 * cell_detune, r2 * cell_detune);
+            float l = drawShape(vec2(p - v + d) * (1.25 + 0.25 * hash(seed) ) );
+            c = min(c, l + float(i + 4) * cell_detail * 0.05);
 
-        }
+          }
 
 
           return sqrt(c*4.);
@@ -204,12 +211,13 @@ var blobFragmentShader = `
       float o_nrho = clamp((n_rho - c_edge)/(o_edge - c_edge), 0., 1.);
       vec3 o_col = tex2D(vec2(o_nrho * segments, ustheta2 * slices)); //texturing
 
-      float c_nrho = n_rho/c_edge;
+      float c_nrho = n_rho/c_edge * c_scale;
       vec3 c_col = tex2D(vec2(cos(theta) * c_nrho , sin(theta) * c_nrho ));
 
       //NB. currently using same segments for inner and outer .. this might be changed
 
-      gl_FragColor = vec4( vec3(o_col * o_lum * (1.0 - c_lum) + c_lum * c_col),1.0);
+    gl_FragColor = vec4( vec3(o_col * o_lum * (1.0 - c_lum) + c_lum * c_col),1.0);
 
   }
+
 `;
