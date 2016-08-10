@@ -41,6 +41,7 @@ var blobFragmentShader = `
   uniform float hl_pow;
   uniform float hl_mul;
   uniform float cell_detune;
+  uniform float c_fade;
 
 
 
@@ -212,11 +213,11 @@ var blobFragmentShader = `
       vec3 o_col = tex2D(vec2(o_nrho * segments, ustheta2 * slices)); //texturing
 
       float c_nrho = n_rho/c_edge * c_scale;
-      vec3 c_col = tex2D(vec2(cos(theta) * c_nrho , sin(theta) * c_nrho ));
+      vec3 c_col = tex2D(vec2(cos(theta) * c_nrho , sin(theta) * c_nrho )) * c_fade;
 
       //NB. currently using same segments for inner and outer .. this might be changed
 
-    gl_FragColor = vec4( vec3(o_col * o_lum * (1.0 - c_lum) + c_lum * c_col),1.0);
+      gl_FragColor = vec4( vec3(o_col * o_lum * (1.0 - c_lum) + c_lum * c_col),1.0);
 
   }
 
