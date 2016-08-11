@@ -37,6 +37,9 @@ $('document').ready(function(){
         env[i].targetVal = 1.0;
       }
 
+      graphics.triggerReaction();
+      //graphics.changeState();
+
     }, false);
 
     canvas.addEventListener('touchend', function(e) {

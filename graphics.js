@@ -1,108 +1,39 @@
 
 var black = new THREE.Vector3(0,0,0);
-var col1 = new THREE.Vector3(
-	Math.random() * 0.2, //maybe make the reciprocal ?
-	Math.random() * 0.2,
-	Math.random() * 0.2
-);
 
-var col2 = new THREE.Vector3(
-	1.0 - Math.random() * 0.3,
-	1.0 - Math.random() * 0.3,
-	1.0 - Math.random() * 0.3
-);
+var colseed = Math.random();
+var colseed2 = (colseed + (0.3 + Math.random() * 0.3))%1.;
+var col1 = lightColorPalette(colseed);
+var col2 = lightColorPalette(colseed2);
 
-var States =
-[
-	//0
-	{
-	 cell_detail: 2.0,
-	 cell_detune: 0.0,
-	 c_size: 0.8,
-	 c_scale: 0.5,
-	 slices: 1.0,
-	 segments: 1.0,
-	 theta_warp: 1.2,
-	 fg_color: col2,
-	 bg_color: black,
-	 hl_color: col1,
-	 fg_pow: 3,
-	 hl_pow: 0,
-	 c_fade: 0
-	},
+function darkColorPalette(seed)
+{
 
-	//1
-	{
-	 c_size: 0.7,
-	 cell_detune: 0.5,
-	 hl_pow: 0.7,
-	 hl_mul: 2.0,
-	 c_fade: 0.2
- 	},
+	var h = (.25 + seed * .85)%1.0;
+	var s = .9;
+	var l = .15 + .1 * Math.pow(seed, 2.0) ;
 
-	//2
-	{
-		cell_detail: 0.7,
-		slices: 3.7,
-		c_fade: 1.0
-	},
+	var rgb = hslToRgb(h,s,l);
+	var c = new THREE.Vector3(rgb[0], rgb[1], rgb[2]);
 
-	//3
-	{
-		cell_detail: 0.2,
-		c_size: 0.6,
-	},
+	return c;
+}
 
-	//4
-	{
-		c_scale: 0.7,
-		cell_detail: 0.1,
-		slices: 6.0,
-		hl_pow: 1.0,
-		hl_mul: 4.0,
-		theta_warp: 1.5,
-		cell_detune: 0.75
-	},
+function lightColorPalette(seed)
+{
 
-	//5
-	{
-		theta_warp: 1.6,
-		fg_pow: 2.0,
-		hl_mul: 7.0,
-		hl_pow: 1.3,
-		slices: 7.0,
-		c_scale: 1.0,
-		cell_detail: 0.0,
-		cell_detune: 0.5,
-	},
+	var bump = Math.sin(Math.PI * seed);
+	var h = seed;
+	var s = .5 + bump * .5;
+	var l = 0.6;
 
-	//6
+	var rgb = hslToRgb(h,s,l);
+	var c = new THREE.Vector3(rgb[0], rgb[1], rgb[2]);
 
-	{
-		fg_pow: 0.5,
-		hl_pow: 0.25,
-		c_size: 0.5,
-		c_scale: 1.0,
-		fg_color: black,
-		bg_color: col1,
-		hl_color: col2,
-	},
-
-	//7
-	{
-		fg_pow: 0.5,
-		hl_pow: 0.5,
-		hl_mul: 2.0
-	},
+	return c;
+}
 
 
-
-
-
-
-
-
-]
 
 var Graphics = function(){
 
@@ -111,15 +42,17 @@ var Graphics = function(){
 	this.renderer;
 	this.canvas;
 
+	this.stateIndex = 0;
 	this.prevState;
+	this.currState;
 	this.stateDeltas;
-	this.stateEnvelope = new Envelope(3.5, 60);
+	this.stateEnvelope = new Envelope(0.5, 60);
 
 	this.uniforms = {
 		time:       { value: 1.0 },
 		resolution: { value: new THREE.Vector2() },
 		mouse:  	{value: new THREE.Vector2(0,0) },
-		scale:      {value: 2.0, gui: true, min: 1.0, max: 10.0},
+		scale:      {value: 1.0, gui: true, min: 1.0, max: 10.0},
 		seed:      {value: 0.01, gui: true, min: 0., max: 1., step: 0.01},
 		slices:      {value: 8.0, gui: true, min: 1.0, max: 20.0},
 		segments:      {value: 1.0, gui: true, min: 1.0, max: 10.0},
@@ -131,8 +64,8 @@ var Graphics = function(){
 		o_step:      {value: 20.0, gui: true, min: 0.0, max: 30.0},
 		c_amp:      {value: 0.1, gui: true, min: 0.0, max: 1.0},
 		theta_warp:      {value: 1.5, gui: true, min: 0.0, max: 4.0},
-		move_mul:      {value: .5, gui: true, min: 0.0, max: 1.0},
-		move_add:      {value: .5, gui: true, min: 0.0, max: 1.0},
+		move_mul:      {value: 0., gui: true, min: 0.0, max: 1.0},
+		move_add:      {value: 0., gui: true, min: 0.0, max: 1.0},
 		move_freq:      {value: 2., gui: true, min: 0.01, max: 10.0},
 		move_distort: 	{value: new THREE.Vector2(.4,2.), gui: true, min: 0.0, max: 4.0},
 		bg_color:        {value: new THREE.Vector3(0.13, 0.13, 0.13), gui: true, type: "color"},
@@ -155,7 +88,7 @@ var Graphics = function(){
 	  this.renderer.setSize( window.innerWidth, window.innerHeight );
 
 
-	  document.body.appendChild( this.renderer.domElement );
+	  $('#cv').append( this.renderer.domElement );
 	  this.canvas = this.renderer.domElement;
 
 		this.uniforms.resolution.value.x = this.renderer.domElement.width;
@@ -178,7 +111,7 @@ var Graphics = function(){
 
 	  this.scene.add( mesh );
 
-		this.changeState(0);
+		this.resetState();
 
 	}
 
@@ -190,40 +123,89 @@ var Graphics = function(){
 		if(this.changingState)this.updateState();
 
 		this.renderer.render( this.scene, this.camera );
+
+		this.uniforms.c_size.value += (-.05 + Math.random() * 0.1) * env[0].z;
 	}
 
-	this.changeState = function(i)
+
+
+////////////////////////////////////////////////////GROWTH STATES///////////////////////////////
+
+	this.resetState = function()
+	{
+		this.stateIndex = 0;
+
+		this.currState = {};
+
+		for(property in this.uniforms)
+		{
+			if(typeof(this.uniforms[property].value) == "number")
+			{
+				if(States[0][property] !== undefined)
+				{
+					this.uniforms[property].value = States[0][property];
+				}
+
+				this.currState[property] = this.uniforms[property].value;
+
+			}
+			else if(this.uniforms[property].value instanceof THREE.Vector3)
+			{
+				if(States[0][property] !== undefined)
+				{
+					this.uniforms[property].value.copy(States[0][property]);
+				}
+
+				this.currState[property]  = new THREE.Vector3().copy(this.uniforms[property].value);
+			}
+			else if(this.uniforms[property].value instanceof THREE.Vector2)
+			{
+				if(States[0][property] !== undefined)
+				{
+
+					this.uniforms[property].value.copy(States[0][property]);
+				}
+
+				this.currState[property] = new THREE.Vector2().copy(this.uniforms[property].value);
+			}
+		}
+
+	}
+
+	this.changeState = function()
 	{
 
+		this.stateIndex += 1;
 		this.prevState = {};
 		this.stateDeltas = {};
 		this.stateEnvelope.z = 0.0;
 		this.stateEnvelope.targetVal = 1.0;
 		this.changingState = true;
 
-		for(property in States[i])
+		for(property in States[this.stateIndex])
 		{
 
 
 			if(typeof(this.uniforms[property].value) == "number")
 			{
 				this.prevState[property] = this.uniforms[property].value;
-				this.stateDeltas[property] = States[i][property] - this.uniforms[property].value;
+				this.stateDeltas[property] = States[this.stateIndex][property] - this.uniforms[property].value;
+
 			}
 			else if(this.uniforms[property].value instanceof THREE.Vector3)
 			{
 				this.prevState[property] = new THREE.Vector3().copy(this.uniforms[property].value);
 				this.stateDeltas[property] = new THREE.Vector3();
-				this.stateDeltas[property].x = States[i][property].x - this.uniforms[property].value.x;
-				this.stateDeltas[property].y = States[i][property].y - this.uniforms[property].value.y;
-				this.stateDeltas[property].z = States[i][property].z - this.uniforms[property].value.z;
+				this.stateDeltas[property].x = States[this.stateIndex][property].x - this.uniforms[property].value.x;
+				this.stateDeltas[property].y = States[this.stateIndex][property].y - this.uniforms[property].value.y;
+				this.stateDeltas[property].z = States[this.stateIndex][property].z - this.uniforms[property].value.z;
 			}
 			else if(this.uniforms[property].value instanceof THREE.Vector2)
 			{
 				this.prevState[property] = new THREE.Vector2().copy(this.uniforms[property].value);
 				this.stateDeltas[property] = new THREE.Vector2();
-				this.stateDeltas[property].x = States[i][property].x - this.uniforms[property].value.x;
-				this.stateDeltas[property].y = States[i][property].y - this.uniforms[property].value.y;
+				this.stateDeltas[property].x = States[this.stateIndex][property].x - this.uniforms[property].value.x;
+				this.stateDeltas[property].y = States[this.stateIndex][property].y - this.uniforms[property].value.y;
 			}
 		}
 
@@ -244,17 +226,20 @@ var Graphics = function(){
 				if(typeof(this.uniforms[property].value) == "number")
 				{
 					this.uniforms[property].value = this.prevState[property] + this.stateDeltas[property] * this.stateEnvelope.z;
+					this.currState[property] = this.uniforms[property].value;
 				}
 				else if(this.uniforms[property].value instanceof THREE.Vector3)
 				{
 					this.uniforms[property].value.x = this.prevState[property].x + this.stateDeltas[property].x * this.stateEnvelope.z;
 					this.uniforms[property].value.y = this.prevState[property].y + this.stateDeltas[property].y * this.stateEnvelope.z;
 					this.uniforms[property].value.z = this.prevState[property].z + this.stateDeltas[property].z * this.stateEnvelope.z;
+					this.currState[property].copy(this.uniforms[property].value);
 				}
 				else if(this.uniforms[property].value instanceof THREE.Vector2)
 				{
 					this.uniforms[property].value.x = this.prevState[property].x + this.stateDeltas[property].x * this.stateEnvelope.z;
 					this.uniforms[property].value.y = this.prevState[property].y + this.stateDeltas[property].y * this.stateEnvelope.z;
+					this.currState[property].copy(this.uniforms[property].value);
 				}
 			}
 		}
@@ -264,7 +249,16 @@ var Graphics = function(){
 		}
 
 	}
+	///////////////////////////////////////////////////////REACTIONS///////////////////////////
 
-	this.init();
+	this.triggerReaction = function()
+	{
+
+
+	}
+
+	////////////////////////////////////////////////////////////////////////////
+
+	this.init(); //initialise the object
 
 }
