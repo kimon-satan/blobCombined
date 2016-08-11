@@ -12,9 +12,9 @@ $('document').ready(function(){
   accumulator = 0;
 
   env = [
-    new Envelope2(0.01,0.2,60),
-    new Envelope2(0.01,0.2,60),
-    new Envelope2(0.01,0.2,60)
+    new Envelope2(0.01,0.05,60),
+    new Envelope2(1.0,0.2,60),
+    new Envelope2(2.0,4.0,60)
   ];
 
 
@@ -35,6 +35,7 @@ $('document').ready(function(){
       for(var i = 0; i < env.length; i++)
       {
         env[i].targetVal = 1.0;
+        env[i].z = 0.0;
       }
 
       graphics.triggerReaction();
@@ -132,99 +133,3 @@ $('document').ready(function(){
   render();
 
 });
-
-
-
-
-/*----------------------------------------GUI----------------------------------------------*/
-
-// var ControlPanel = function() {
-//
-//   for (var property in uniforms) {
-//     if (uniforms.hasOwnProperty(property)) {
-//         if(uniforms[property].gui){
-//         	if( uniforms[property].value instanceof THREE.Vector2)
-//         	{
-// 				this[property + "_x"] = uniforms[property].value.x;
-// 				this[property + "_y"] = uniforms[property].value.y;
-// 			}
-// 			else if(uniforms[property].type == "color")
-// 	  		{
-// 	  			this[property] = "#ffffff";
-//         	}else{
-//         		this[property] = uniforms[property].value;
-//         	}
-//
-//         }
-//     }
-//   }
-//
-//
-// };
-//
-// window.onload = function()
-// {
-//   var controlPanel = new ControlPanel();
-//   var gui = new dat.GUI();
-//   gui.remember(controlPanel);
-//   var events = {};
-//
-//   for (var property in uniforms) {
-//   	if (uniforms.hasOwnProperty(property)) {
-//   		if(uniforms[property].gui){
-//
-//   			if( uniforms[property].value instanceof THREE.Vector2)
-//         	{
-//         		var coord = ["x", "y"];
-//
-//         		for(var i = 0; i < 2; i++)
-//         		{
-//
-// 	        		events[property + "_" + coord[i]] = gui.add(controlPanel, property + "_" + coord[i], uniforms[property].min, uniforms[property].max);
-//
-// 		  			events[property + "_" + coord[i]].onChange(function(value) {
-// 		  				var key = this.property.substring(0, this.property.length - 2);
-// 					 	uniforms[key].value[this.property.substring(this.property.length - 1)] = value;
-// 					});
-//
-// 	  			}
-//
-// 	  		}
-// 	  		else if(uniforms[property].type == "color")
-// 	  		{
-// 	  			events[property] = gui.addColor(controlPanel, property);
-//
-// 	  			events[property].onChange(function(value) {
-//
-// 	  				var col = hexToFloat(value);
-//
-// 					uniforms[this.property].value.x = col[0];
-// 					uniforms[this.property].value.y = col[1];
-// 					uniforms[this.property].value.z = col[2];
-//
-// 	  			});
-//         	}
-//         	else
-//         	{
-// 	  			events[property] = gui.add(controlPanel, property, uniforms[property].min, uniforms[property].max);
-//
-// 	  			events[property].onChange(function(value) {
-// 				  uniforms[this.property].value = value;
-// 				});
-//
-//   			}
-//   		}
-//   	}
-//   }
-//
-//
-//
-//
-//
-//
-//
-//
-// };
-
-
-/////////////////////////////////HELPERS/////////////////////////////////

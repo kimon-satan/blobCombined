@@ -1,3 +1,5 @@
+
+//ideally this won't be global
 var States =
 [
 	//0

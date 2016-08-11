@@ -17,6 +17,8 @@ var blobFragmentShader = `
   uniform vec2 mouse;
   uniform float scale;
 
+  uniform float c_time;
+
   //Blob characteristics
 
   uniform float seed; //for hashable functions
@@ -42,6 +44,7 @@ var blobFragmentShader = `
   uniform float hl_mul;
   uniform float cell_detune;
   uniform float c_fade;
+
 
 
 
@@ -198,7 +201,7 @@ var blobFragmentShader = `
       move = move * move_mul + move_add;
 
       float o_noise = noise(vec3(ustheta2 * o_step * move.x , ustheta2 * o_step * move.y , 0.)); //symmetrical noise
-      float c_noise = noise(vec3(cos(theta) + time, sin(theta) + time , 0.));
+      float c_noise = noise(vec3(cos(theta) + c_time, sin(theta) + c_time, 0.));
 
       //edges
       float o_edge = 1. - o_amp * o_noise;

@@ -7,7 +7,7 @@ var files = [
 '169830_dino009.wav',
 '19997_blackbird.wav',
 '19997_blackbird_flap.wav',
-'20472_woodpigeonnr_01.wav',
+'20472_woodpigeonnr_01.wav', //4
 '20472_woodpigeonnr_02.wav',
 '20472_woodpigeonnr_03.wav',
 '235443_sandhill-crane.wav',
@@ -26,6 +26,23 @@ var files = [
 '66637_crying-baby-4.wav',
 '66637_crying-baby-select.wav',
 ];
+
+var SoundStates =
+[
+  {
+    file: {value: "20472_woodpigeonnr_01.wav"},
+    amp: {value: 0.0, min: 0.0, max: 1.0, map: 0},
+    speed: {value: 0.0 },
+    pitch: {value: 1.0, min: 1.0, max: 3600, map: "rand" },
+    pitchRandomization: {value: 0.0 },
+    timeRandomization:{value: 0.0 },
+    grainDuration:{value: 0.025 },
+    grainSpacing:{value: 0.05 , min:0.05, max:0.16  },
+    regionStart: {value: 0.0 , min:0.0, max: 1.0  },
+    regionLength: {value: 0.0 }
+  }
+
+]
 
 var Sound = function(){
 
@@ -46,21 +63,22 @@ var Sound = function(){
   //IOS hack
   this.isUnlocked = false;
 
+  this.state = 0;
 
-  this.file = files[0];
 
   this.parameters =
   {
-    amp: {value: 0.0, min: 0.0, max: 1.0, gui: true , step: 0.01, map: 0},
-    speed: {value: 0.0, min: -4.0, max: 4.0, gui: true , step: 0.01},
-    pitch: {value: 1.0, min: 1.0, max: 3600, gui: true, step: 10},
-    pitchRandomization: {value: 0.0, min: 0.0, max: 1200.0, gui: true, step: 10},
-    timeRandomization:{value: 0.01 , min:0.0, max:1.0, gui:true , step : 0.01},
-    grainSize:{value: 0.09 , min:0.010, max:0.5, gui:true , custom: true, step: 0.01},
-    grainDuration:{value: 0.09 , min:0.010, max:0.5, gui:true , step: 0.001},
-    grainSpacing:{value: 0.045 , min:0.010, max:0.5, gui:true , step: 0.001},
-    regionStart: {value: 0.01 , min:0.0, max:1.0, gui:true , step : 0.001},
-    regionLength: {value: 0.01 , min:0.0, max:10.0, gui:true , step : 0.01}
+    file: {value: files[0]},
+    amp: {value: 0.0, min: 0.0, max: 1.0, map: 0},
+    speed: {value: 0.0, min: -4.0, max: 4.0  },
+    pitch: {value: 1.0, min: 1.0, max: 3600  },
+    pitchRandomization: {value: 0.0, min: 0.0, max: 1200.0  },
+    timeRandomization:{value: 0.01 , min:0.0, max:1.0 },
+    grainSize:{value: 0.09 , min:0.010, max:0.5 },
+    grainDuration:{value: 0.09 , min:0.010, max:0.5 },
+    grainSpacing:{value: 0.045 , min:0.010, max:0.5 , map: 1},
+    regionStart: {value: 0.01 , min:0.0, max:1.0 , map: 1 },
+    regionLength: {value: 0.01 , min:0.0, max:10.0  }
   }
 
 
@@ -103,7 +121,7 @@ var Sound = function(){
     }
 
 
-    this.loadSample("samples/" + this.file);
+    this.setState(0);
 
 
   }
@@ -119,7 +137,7 @@ var Sound = function(){
       for (var property in this.parameters)
       {
 
-        if(this.parameters[property].map > -1 )
+        if(typeof(this.parameters[property].map) == "number")
         {
             this.parameters[property].value = linlin
             (
@@ -259,6 +277,28 @@ var Sound = function(){
 
   }
 
+  this.setState  = function(stateId)
+  {
+    for(property in SoundStates[stateId])
+    {
+        for(p in SoundStates[stateId][property])
+        {
+          this.parameters[property][p] = SoundStates[stateId][property][p];
+        }
+
+        if(this.parameters[property].map == "rand")
+        {
+          this.parameters[property].value = linlin(
+            Math.random(), 0, 1,
+            this.parameters[property].min,
+            this.parameters[property].max
+          );
+        }
+    }
+
+    this.loadSample("samples/" + this.parameters.file.value);
+  }
+
   //IOS workaround
 
   this.unlock = function()
@@ -288,151 +328,3 @@ var Sound = function(){
 
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-/////////////////////////////////////////////// GUI stuff ////////////////////////////////////////
-
-// function EnvPanel() {
-//
-//   for(var i =0; i < env.length; i++)
-//   {
-//     this[ i + "_attack" ] = env[i].attTime;
-//     this[ i + "_decay" ] = env[i].decTime;
-//   }
-//
-// }
-//
-//
-// function ControlPanel()
-// {
-//
-//   for (var property in parameters)
-//   {
-//     if (parameters.hasOwnProperty(property))
-//     {
-//       this[property] = parameters[property].value;
-//       this[ "map_" + property] = -1;
-//       this[ "min_" + property] = parameters[property].min;
-//       this[ "max_" + property] = parameters[property].max;
-//
-//     }
-//   }
-//
-//
-//   this.sample = files[0];
-//
-// }
-//
-//
-// function init()
-// {
-//
-//   envPanel = new EnvPanel();
-//   envGui = new dat.GUI({ autoPlace: false });
-//   envGui.remember(envPanel);
-//
-//   $('#envGui').append(envGui.domElement);
-//
-//   for(var i = 0; i < env.length; i++)
-//   {
-//     var ae = envGui.add(envPanel, i + "_attack", 0.0, 5.0).step(0.01);
-//     var de = envGui.add(envPanel, i + "_decay", 0.0, 5.0).step(0.01);
-//
-//     ae.onChange(function(value){
-//         var i = parseInt(this.property.substring(0,1));
-//         env[i].attTime = value;
-//         env[i].reset();
-//     })
-//
-//     de.onChange(function(value){
-//       var i = parseInt(this.property.substring(0,1));
-//       env[i].decTime = value;
-//       env[i].reset();
-//     })
-//   }
-//
-//   controlPanel = new ControlPanel();
-//   gui = new dat.GUI();
-//   folders = {};
-//   gui.remember(controlPanel); //causes problems
-//
-//
-//   var fileEvent = gui.add(controlPanel, 'sample', files );
-//
-//   fileEvent.onChange(function(value){
-//
-//     loadSample("samples/" + value);
-//
-//   });
-//
-//   var directEvents = {};
-//
-//
-//   for (var property in parameters)
-//   {
-//     if (parameters.hasOwnProperty(property)) {
-//       if(parameters[property].gui){
-//
-//         folders[property] = gui.addFolder(property);
-//         directEvents[property] = folders[property].add(controlPanel, property, parameters[property].min, parameters[property].max);
-//
-//         folders[property].add(controlPanel, "map_" + property, [-1, 0, 1, 2] );
-//         folders[property].add(controlPanel, "min_" + property, parameters[property].min, parameters[property].max ).step(0.01);
-//         folders[property].add(controlPanel, "max_" + property, parameters[property].min, parameters[property].max ).step(0.01);
-//
-//         if(parameters[property].step !== "undefined")
-//         {
-//           directEvents[property].step(parameters[property].step);
-//         }
-//
-//         if(!parameters[property].custom){
-//
-//           directEvents[property].onChange(function(value) {
-//             parameters[this.property].value = value;
-//             controlPanel[this.property] = value;
-//           });
-//
-//         }
-//
-//       }
-//     }
-//   }
-//
-//
-//
-//   //CUSTOM HANDLERS
-//
-//
-//   directEvents.grainSize.onChange (function(val){
-//     parameters.grainDuration.value = val;
-//     parameters.grainSpacing.value = 0.5 * parameters.grainDuration.value;
-//     parameters.grainSize.value = val;
-//     controlPanel.grainDuration = parameters.grainDuration.value;
-//     controlPanel.grainSpacing = parameters.grainSpacing.value;
-//   });
-//
-//
-// }
-
-/////////////////////////////////////////FILE LOADING///////////////////////////////////////
-
-
-
-
-
-
-
-
-
-//////////////////////
