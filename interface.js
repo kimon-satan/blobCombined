@@ -1,4 +1,5 @@
-var graphics, sound, env, startTime, ellapsedTime, accumulator, canvas, envsActive;
+var graphics, sound, env, startTime, ellapsedTime, accumulator, canvas;
+var envsActive, touchStartPos, numTouches, isGesture;
 
 $('document').ready(function(){
 
@@ -6,15 +7,18 @@ $('document').ready(function(){
   sound = new Sound();
   var mousePos = new THREE.Vector2(0,0);
 
+  touchStartPos = new THREE.Vector2();
 
   startTime = new Date().getTime();
   ellapsedTime = 0;
   accumulator = 0;
+  isGesture = false;
 
   env = [
-    new Envelope2(0.01,0.05,60),
+    new Envelope2(0.1,0.01,60),
     new Envelope2(1.0,0.2,60),
-    new Envelope2(2.0,4.0,60)
+    new Envelope2(2.0,0.2,60),
+    new Envelope(2.0, 60) //latched by default
   ];
 
 
@@ -27,6 +31,10 @@ $('document').ready(function(){
         e.touches[0].clientY / canvas.height
       );
 
+      isGesture = false;
+
+      touchStartPos.copy(mousePos);
+
       if(!sound.isUnlocked)
       {
         sound.unlock();
@@ -34,12 +42,57 @@ $('document').ready(function(){
 
       for(var i = 0; i < env.length; i++)
       {
-        env[i].targetVal = 1.0;
+        env[i].targetVal = 0.0;
         env[i].z = 0.0;
       }
+      numTouches = 0;
 
-      graphics.triggerReaction();
-      //graphics.changeState();
+
+    }, false);
+
+    canvas.addEventListener('touchmove', function(e){
+
+      //TODO detect when touches are not moving at all in update
+
+      numTouches++;
+
+      if(numTouches > 5){
+
+        var n = new THREE.Vector2(
+          e.touches[0].clientX /canvas.width,
+          e.touches[0].clientY / canvas.height
+        );
+
+        var v1 = new THREE.Vector2().subVectors(n ,mousePos);
+        mousePos.copy(n);
+
+        var v2 = new THREE.Vector2().subVectors(mousePos, touchStartPos);
+
+        if(
+          Math.abs(v2.angle() - Math.PI/2) < 0.2
+          && v1.length() > 0.002
+        )
+        {
+
+          for(var i = 0; i < env.length; i++)
+          {
+            env[i].targetVal = 1.0;
+          }
+
+          isGesture = true;
+
+        }
+        else
+        {
+          for(var i = 0; i < env.length; i++)
+          {
+            env[i].targetVal = 0.0;
+          }
+
+          isGesture = false;
+        }
+      }
+
 
     }, false);
 
@@ -49,6 +102,8 @@ $('document').ready(function(){
       {
         env[i].targetVal = 0.0;
       }
+
+      isGesture = false;
 
     }, false);
 
@@ -63,6 +118,7 @@ $('document').ready(function(){
       if(!sound.isUnlocked){
         sound.isUnlocked = true;
       }
+
 
 
       for(var i = 0; i < env.length; i++)

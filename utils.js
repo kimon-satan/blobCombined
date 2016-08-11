@@ -100,24 +100,35 @@ Envelope = function(time, sampleRate)
   this.a  = 0;
   this.b = 0;
   this.z = 0.0;
-  this.time = time;
   this.targetVal = 0.0;
   this.sampleRate = sampleRate;
+  this.isLatched = false;
 
 
   this.step = function()
   {
-    this.z = this.targetVal * this.a + this.z * this.b;
+    var v = this.targetVal * this.a + this.z * this.b;
+
+    if(this.isLatched)
+    {
+      this.z = Math.max(v, this.z);
+    }
+    else
+    {
+      this.z = v;
+    }
+    
     return this.z;
   }
 
-  this.setTime = function()
+  this.setTime = function(t)
   {
-    this.b = Math.exp(-1.0/(this.time * this.sampleRate));
+    this.time = t;
+    this.b = Math.exp(-1.0/(t * this.sampleRate));
     this.a = 1.0 - this.b;
   }
 
-  this.setTime(this.time);
+  this.setTime(time);
 
 }
 
@@ -172,6 +183,10 @@ Envelope2 = function(attTime, decTime, sampleRate)
   this.setAttDel(attTime, decTime);
 
 }
+
+//////////////////////////////////////////////////////////////////
+
+
 
 
 hexToFloat = function(hex) {

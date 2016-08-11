@@ -31,14 +31,14 @@ var SoundStates =
 [
   {
     file: {value: "20472_woodpigeonnr_01.wav"},
-    amp: {value: 0.0, min: 0.0, max: 1.0, map: 0},
+    amp: {value: 0.0, min: 0.0, max: 0.5, map: 1},
     speed: {value: 0.0 },
-    pitch: {value: 1.0, min: 1.0, max: 3600, map: "rand" },
+    pitch: {value: 1.0, min: 1.0, max: 500, map: "rand" },
     pitchRandomization: {value: 0.0 },
     timeRandomization:{value: 0.0 },
-    grainDuration:{value: 0.025 },
-    grainSpacing:{value: 0.05 , min:0.05, max:0.16  },
-    regionStart: {value: 0.0 , min:0.0, max: 1.0  },
+    grainDuration:{value: 0.04 },
+    grainSpacing:{value: 0.05 , min:0.04, max:0.16, map: "none"  },
+    regionStart: {value: 0.0 , min:1.0, max: 0.6 , map: 3 },
     regionLength: {value: 0.0 }
   }
 
@@ -69,15 +69,15 @@ var Sound = function(){
   this.parameters =
   {
     file: {value: files[0]},
-    amp: {value: 0.0, min: 0.0, max: 1.0, map: 0},
+    amp: {value: 0.0, min: 0.0, max: 1.0},
     speed: {value: 0.0, min: -4.0, max: 4.0  },
     pitch: {value: 1.0, min: 1.0, max: 3600  },
     pitchRandomization: {value: 0.0, min: 0.0, max: 1200.0  },
     timeRandomization:{value: 0.01 , min:0.0, max:1.0 },
     grainSize:{value: 0.09 , min:0.010, max:0.5 },
     grainDuration:{value: 0.09 , min:0.010, max:0.5 },
-    grainSpacing:{value: 0.045 , min:0.010, max:0.5 , map: 1},
-    regionStart: {value: 0.01 , min:0.0, max:1.0 , map: 1 },
+    grainSpacing:{value: 0.045 , min:0.010, max:0.5 },
+    regionStart: {value: 0.01 , min:0.0, max:1.0 },
     regionLength: {value: 0.01 , min:0.0, max:10.0  }
   }
 
@@ -134,22 +134,24 @@ var Sound = function(){
 
       //mapping to envelopes this will need sorting
 
-      for (var property in this.parameters)
-      {
 
-        if(typeof(this.parameters[property].map) == "number")
-        {
-            this.parameters[property].value = linlin
-            (
-              env[this.parameters[property].map].z,
-              0.0, 1.0,
-              this.parameters[property].min, this.parameters[property].max
-            );
-        }
-      }
 
       if(envsActive)
       {
+
+        for (var property in this.parameters)
+        {
+
+          if(typeof(this.parameters[property].map) == "number")
+          {
+              this.parameters[property].value = linlin
+              (
+                env[this.parameters[property].map].z,
+                0.0, 1.0,
+                this.parameters[property].min, this.parameters[property].max
+              );
+          }
+        }
 
        while (this.realTime < currentTime + 0.100)
         {
@@ -314,10 +316,13 @@ var Sound = function(){
     source.connect(this.audioContext.destination);
     source.noteOn(0);
 
+    var host = this;
     // by checking the play state after some time, we know if we're really unlocked
     setTimeout(function() {
-      if((source.playbackState === source.PLAYING_STATE || source.playbackState === source.FINISHED_STATE)) {
-        this.isUnlocked = true;
+      if((source.playbackState === source.PLAYING_STATE || source.playbackState === source.FINISHED_STATE))
+      {
+        host.isUnlocked = true;
+        console.log("unlocked")
       }
     }, 10);
 

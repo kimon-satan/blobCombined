@@ -46,7 +46,7 @@ var Graphics = function(){
 	this.prevState;
 	this.currState;
 	this.stateDeltas;
-	this.stateEnvelope = new Envelope(20, 60);
+	this.stateEnvelope = new Envelope(5, 60);
 
 	this.uniforms = {
 		time:       { value: 1.0 },
@@ -115,31 +115,40 @@ var Graphics = function(){
 
 	  this.scene.add( mesh );
 
-		this.resetState();
-		//this.changeState();
+		this.initState();
+		this.changeState();
 	}
 
 	this.draw = function(ellapsedTime , mousePos){
 
-		var delta = ellapsedTime - this.uniforms.time.value;
+		this.updateUniforms(); //reset the uniforms after any jiggery
 
-		//update the various time uniforms
 
-	  this.uniforms.time.value = ellapsedTime;
-		this.uniforms.c_time.value += delta * this.uniforms.c_freq.value;
-
-		this.uniforms.mouse.value = mousePos;
-
-		if(this.changingState)this.updateState();
-
-		this.renderer.render( this.scene, this.camera );
 
 		if(envsActive)
 		{
 			this.uniforms.c_size.value = this.currState.c_size - 0.4 * env[1].z;
 			this.uniforms.c_amp.value = this.currState.c_amp + 0.25 * env[1].z;
 			this.uniforms.c_freq.value = this.currState.c_freq + env[1].z * 10.0;
+
+
 		}
+
+		if(isGesture)
+		{
+			this.updateState();
+		}
+		
+		//update the various time uniforms last
+		var delta = ellapsedTime - this.uniforms.time.value;
+		this.uniforms.c_time.value += delta * this.uniforms.c_freq.value;
+
+
+		this.uniforms.time.value = ellapsedTime;
+		this.uniforms.mouse.value = mousePos;
+
+
+		this.renderer.render( this.scene, this.camera );
 
 	}
 
@@ -147,7 +156,7 @@ var Graphics = function(){
 
 ////////////////////////////////////////////////////GROWTH STATES///////////////////////////////
 
-	this.resetState = function()
+	this.initState = function()
 	{
 		this.stateIndex = 0;
 
@@ -188,6 +197,30 @@ var Graphics = function(){
 
 	}
 
+	this.updateUniforms = function()
+	{
+
+
+		for(property in this.uniforms)
+		{
+			if(typeof(this.uniforms[property].value) == "number")
+			{
+
+				this.uniforms[property].value = this.currState[property];
+
+			}
+			else if(this.uniforms[property].value instanceof THREE.Vector3)
+			{
+			 	this.uniforms[property].value.copy(this.currState[property]);
+			}
+			else if(this.uniforms[property].value instanceof THREE.Vector2)
+			{
+
+				 this.uniforms[property].value.copy(this.currState[property]);
+			}
+		}
+	}
+
 	this.changeState = function()
 	{
 
@@ -204,24 +237,20 @@ var Graphics = function(){
 
 			if(typeof(this.uniforms[property].value) == "number")
 			{
-				this.prevState[property] = this.uniforms[property].value;
-				this.stateDeltas[property] = States[this.stateIndex][property] - this.uniforms[property].value;
+				this.prevState[property] = this.currState[property];
+				this.stateDeltas[property] = States[this.stateIndex][property] - this.currState[property];
 
 			}
 			else if(this.uniforms[property].value instanceof THREE.Vector3)
 			{
-				this.prevState[property] = new THREE.Vector3().copy(this.uniforms[property].value);
-				this.stateDeltas[property] = new THREE.Vector3();
-				this.stateDeltas[property].x = States[this.stateIndex][property].x - this.uniforms[property].value.x;
-				this.stateDeltas[property].y = States[this.stateIndex][property].y - this.uniforms[property].value.y;
-				this.stateDeltas[property].z = States[this.stateIndex][property].z - this.uniforms[property].value.z;
+				this.prevState[property] = new THREE.Vector3().copy(this.currState[property].value);
+				this.stateDeltas[property] = new THREE.Vector3().subVectors(States[this.stateIndex][property],this.currState[property] );
 			}
 			else if(this.uniforms[property].value instanceof THREE.Vector2)
 			{
-				this.prevState[property] = new THREE.Vector2().copy(this.uniforms[property].value);
-				this.stateDeltas[property] = new THREE.Vector2();
-				this.stateDeltas[property].x = States[this.stateIndex][property].x - this.uniforms[property].value.x;
-				this.stateDeltas[property].y = States[this.stateIndex][property].y - this.uniforms[property].value.y;
+				this.prevState[property] = new THREE.Vector2().copy(this.currState[property].value);
+				this.stateDeltas[property] = new THREE.Vector2().subVectors(States[this.stateIndex][property],this.currState[property] );
+
 			}
 		}
 
@@ -231,6 +260,7 @@ var Graphics = function(){
 	{
 
 		//TODO make methods for shifting between vectors
+		if(!this.changingState)return;
 
 		this.stateEnvelope.step();
 
@@ -241,28 +271,25 @@ var Graphics = function(){
 
 				if(typeof(this.uniforms[property].value) == "number")
 				{
-					this.uniforms[property].value = this.prevState[property] + this.stateDeltas[property] * this.stateEnvelope.z;
-					this.currState[property] = this.uniforms[property].value;
+					this.currState[property] = this.prevState[property] + this.stateDeltas[property] * this.stateEnvelope.z;
 				}
 				else if(this.uniforms[property].value instanceof THREE.Vector3)
 				{
-					this.uniforms[property].value.x = this.prevState[property].x + this.stateDeltas[property].x * this.stateEnvelope.z;
-					this.uniforms[property].value.y = this.prevState[property].y + this.stateDeltas[property].y * this.stateEnvelope.z;
-					this.uniforms[property].value.z = this.prevState[property].z + this.stateDeltas[property].z * this.stateEnvelope.z;
-					this.currState[property].copy(this.uniforms[property].value);
+					this.currState[property].x = this.prevState[property].x + this.stateDeltas[property].x * this.stateEnvelope.z;
+					this.currState[property].y = this.prevState[property].y + this.stateDeltas[property].y * this.stateEnvelope.z;
+					this.currState[property].z = this.prevState[property].z + this.stateDeltas[property].z * this.stateEnvelope.z;
 				}
 				else if(this.uniforms[property].value instanceof THREE.Vector2)
 				{
-					this.uniforms[property].value.x = this.prevState[property].x + this.stateDeltas[property].x * this.stateEnvelope.z;
-					this.uniforms[property].value.y = this.prevState[property].y + this.stateDeltas[property].y * this.stateEnvelope.z;
-					this.currState[property].copy(this.uniforms[property].value);
+					this.currState[property].x = this.prevState[property].x + this.stateDeltas[property].x * this.stateEnvelope.z;
+					this.currState[property].y = this.prevState[property].y + this.stateDeltas[property].y * this.stateEnvelope.z;
 				}
 			}
 		}
 		else
 		{
 				this.changingState = false;
-				//this.changeState();
+				this.changeState(); // keep moving through states
 		}
 
 	}
