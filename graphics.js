@@ -3,8 +3,13 @@ var black = new THREE.Vector3(0,0,0);
 
 var colseed = Math.random();
 var colseed2 = (colseed + (0.3 + Math.random() * 0.3))%1.;
-var col1 = lightColorPalette(colseed);
-var col2 = lightColorPalette(colseed2);
+
+
+var col1 = new THREE.Vector3(.53,.53,.53)
+var col2 = new THREE.Vector3(.59,0,0);
+
+//var col1 = lightColorPalette(colseed);
+//var col2 = lightColorPalette(colseed2);
 
 function darkColorPalette(seed)
 {
@@ -130,15 +135,13 @@ var Graphics = function(){
 			this.uniforms.c_size.value = this.currState.c_size - 0.4 * env[1].z;
 			this.uniforms.c_amp.value = this.currState.c_amp + 0.25 * env[1].z;
 			this.uniforms.c_freq.value = this.currState.c_freq + env[1].z * 10.0;
-
-
 		}
 
 		if(isGesture)
 		{
 			this.updateState();
 		}
-		
+
 		//update the various time uniforms last
 		var delta = ellapsedTime - this.uniforms.time.value;
 		this.uniforms.c_time.value += delta * this.uniforms.c_freq.value;
@@ -243,7 +246,7 @@ var Graphics = function(){
 			}
 			else if(this.uniforms[property].value instanceof THREE.Vector3)
 			{
-				this.prevState[property] = new THREE.Vector3().copy(this.currState[property].value);
+				this.prevState[property] = new THREE.Vector3().copy(this.currState[property]);
 				this.stateDeltas[property] = new THREE.Vector3().subVectors(States[this.stateIndex][property],this.currState[property] );
 			}
 			else if(this.uniforms[property].value instanceof THREE.Vector2)

@@ -1,5 +1,5 @@
 var graphics, sound, env, startTime, ellapsedTime, accumulator, canvas;
-var envsActive, touchStartPos, numTouches, isGesture;
+var envsActive, touchStartPos, numTouches, newTouch , isGesture;
 
 $('document').ready(function(){
 
@@ -13,6 +13,7 @@ $('document').ready(function(){
   ellapsedTime = 0;
   accumulator = 0;
   isGesture = false;
+  newTouch = false;
 
   env = [
     new Envelope2(0.1,0.01,60),
@@ -40,11 +41,14 @@ $('document').ready(function(){
         sound.unlock();
       }
 
+      //hard restart
+      //... might be good to have only some envelopes working this way
       for(var i = 0; i < env.length; i++)
       {
         env[i].targetVal = 0.0;
         env[i].z = 0.0;
       }
+
       numTouches = 0;
 
 
@@ -55,6 +59,7 @@ $('document').ready(function(){
       //TODO detect when touches are not moving at all in update
 
       numTouches++;
+      newTouch = true;
 
       if(numTouches > 5){
 
@@ -74,20 +79,14 @@ $('document').ready(function(){
         )
         {
 
-          for(var i = 0; i < env.length; i++)
-          {
-            env[i].targetVal = 1.0;
-          }
+          setEnvTargets(1.)
 
           isGesture = true;
 
         }
         else
         {
-          for(var i = 0; i < env.length; i++)
-          {
-            env[i].targetVal = 0.0;
-          }
+          setEnvTargets(0.)
 
           isGesture = false;
         }
@@ -98,10 +97,7 @@ $('document').ready(function(){
 
     canvas.addEventListener('touchend', function(e) {
 
-      for(var i = 0; i < env.length; i++)
-      {
-        env[i].targetVal = 0.0;
-      }
+      setEnvTargets(0.)
 
       isGesture = false;
 
@@ -119,22 +115,16 @@ $('document').ready(function(){
         sound.isUnlocked = true;
       }
 
+      setEnvTargets(1.)
 
 
-      for(var i = 0; i < env.length; i++)
-      {
-        env[i].targetVal = 1.0;
-      }
 
 
     }, false);
 
     canvas.addEventListener('mouseup', function() {
 
-      for(var i = 0; i < env.length; i++)
-      {
-        env[i].targetVal = 0.0;
-      }
+      setEnvTargets(0.)
 
     }, false);
 
@@ -148,7 +138,13 @@ $('document').ready(function(){
 
    }, false);
 
-
+  function setEnvTargets(target)
+  {
+    for(var i = 0; i < env.length; i++)
+    {
+      env[i].targetVal = target;
+    }
+  }
 
 
   function render() {
@@ -161,6 +157,17 @@ $('document').ready(function(){
 
     if(accumulator > 1.0/60)
     {
+
+      if(newTouch)
+      {
+        newTouch = false;
+      }
+      else
+      {
+        numTouches = 0;
+        setEnvTargets(0);
+      }
+
 
       for(var i = 0; i < env.length; i++)
       {

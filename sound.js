@@ -31,9 +31,9 @@ var SoundStates =
 [
   {
     file: {value: "20472_woodpigeonnr_01.wav"},
-    amp: {value: 0.0, min: 0.0, max: 0.5, map: 1},
+    amp: {value: 0.0, min: 0.0, max: 1.0, map: 1},
     speed: {value: 0.0 },
-    pitch: {value: 1.0, min: 1.0, max: 500, map: "rand" },
+    pitch: {value: 1.0, min: 300.0, max: 800, map: "rand" },
     pitchRandomization: {value: 0.0 },
     timeRandomization:{value: 0.0 },
     grainDuration:{value: 0.04 },

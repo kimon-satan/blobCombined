@@ -4,19 +4,28 @@ var States =
 [
 	//0
 	{
-	 cell_detail: 2.0,
-	 cell_detune: 0.0,
+	 cell_detail: 4.0,
+	 cell_detune: 0.25,
 	 c_size: 0.8,
 	 c_scale: 0.5,
+	 cell_detail: 4.0,
+	 o_amp: 0.15,
+	 o_step: 0.0,
+	 c_amp: 0.15,
+	 move_mul: 0.0,
+	 move_add: 0.0,
+	 move_freq: 0.1,
+	 move_distort: new THREE.Vector2(0.1,0.1),
 	 slices: 1.0,
 	 segments: 1.0,
-	 theta_warp: 1.2,
-	 fg_color: col2,
+	 theta_warp: 1.0,
+	 fg_color: col1,
 	 bg_color: black,
-	 hl_color: col1,
+	 hl_color: col2,
 	 fg_pow: 3,
-	 hl_pow: 0,
-	 c_fade: 0
+	 hl_pow: 0.4,
+	 hl_mul: 2.5,
+	 c_fade: 0.52
 	},
 
 	//1

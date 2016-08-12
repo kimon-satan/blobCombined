@@ -200,12 +200,14 @@ var blobFragmentShader = `
       move.y = pow(move.y, move_distort.y);
       move = move * move_mul + move_add;
 
+
       float o_noise = noise(vec3(ustheta2 * o_step * move.x , ustheta2 * o_step * move.y , 0.)); //symmetrical noise
       float c_noise = noise(vec3(cos(theta) + c_time, sin(theta) + c_time, 0.));
+      float r_noise = noise(vec3(cos(theta) + c_time, sin(theta) + c_time, 10.));
 
       //edges
-      float o_edge = 1. - o_amp * o_noise;
-      float c_edge = c_size - c_amp * c_size * c_noise;
+      float o_edge = 0.7 + o_amp * 0.3 * o_noise + o_amp * 0.3 * r_noise;
+      float c_edge = c_size * 0.7 + c_amp * 0.3 * c_size * c_noise;
 
       //masks with judicious blending for no gaps
       float o_lum =  1.0 - smoothstep(o_edge - 0.1, o_edge , n_rho);
