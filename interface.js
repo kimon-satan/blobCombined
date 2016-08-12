@@ -73,23 +73,28 @@ $('document').ready(function(){
 
         var v2 = new THREE.Vector2().subVectors(mousePos, touchStartPos);
 
-        if(
-          Math.abs(v2.angle() - Math.PI/2) < 0.2
-          && v1.length() > 0.002
-        )
+        if(v1.length() < 0.002)
         {
+          isGesture = false;
+          setEnvTargets(0);
+          return;
+        }
 
-          setEnvTargets(1.)
-
+        if(Math.abs(v2.angle() - Math.PI/2) < 0.2)
+        {
+          setEnvTargets(1.) //gesture 1
           isGesture = true;
-
+        }
+        else if (Math.abs(v2.angle() - Math.PI * 1.5) < 0.2)
+        {
+          console.log("gesture 2") //gesture 2
         }
         else
         {
           setEnvTargets(0.)
-
           isGesture = false;
         }
+
       }
 
 

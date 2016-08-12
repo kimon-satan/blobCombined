@@ -40,6 +40,18 @@ var SoundStates =
     grainSpacing:{value: 0.05 , min:0.04, max:0.16, map: "none"  },
     regionStart: {value: 0.0 , min:1.0, max: 0.6 , map: 3 },
     regionLength: {value: 0.0 }
+  },
+  {
+    file: {value: "20472_woodpigeonnr_01.wav"},
+    amp: {value: 0.0, min: 0.0, max: 1.0, map: 1},
+    speed: {value: 0.0 },
+    pitch: {value: 1.0, min: 300.0, max: 800, map: "rand" },
+    pitchRandomization: {value: 0.0 },
+    timeRandomization:{value: 0.0 },
+    grainDuration:{value: 0.04 },
+    grainSpacing:{value: 0.05 , min:0.04, max:0.16, map: "none"  },
+    regionStart: {value: 0.0 , min:0.36, max: 0.1 , map: 3 },
+    regionLength: {value: 0.0 }
   }
 
 ]
@@ -52,6 +64,8 @@ var Sound = function(){
   this.compressor;
   this.buffer = 0;
   this.bufferDuration = 0.0;
+
+  this.buffers = {};
 
   this.realTime = 0.0;
   this.grainTime = 0.0;
@@ -82,7 +96,7 @@ var Sound = function(){
   }
 
 
-///////////////////////////////////INTERACTION SETUP////////////////////////////
+///////////////////////////////////SOUND SETUP////////////////////////////
 
   this.init = function(){
 
@@ -120,7 +134,12 @@ var Sound = function(){
       this.compressor = this.audioContext.destination;
     }
 
-
+    //for each state load the sound file
+    for(var s in SoundStates)
+    {
+      this.loadSample("samples/" + SoundStates[s].file.value);
+    }
+    //just swaps the pointer to the sound file
     this.setState(0);
 
 
@@ -153,15 +172,32 @@ var Sound = function(){
           }
         }
 
-       while (this.realTime < currentTime + 0.100)
+       while (this.realTime < currentTime + 0.100 )
         {
-          this.nextGrain();
+
+          if(!this.nextGrain()){
+            break;
+          };
+
         }
+
+
 
       }
   }
 
   this.loadSample = function(url) {
+
+    //TODO fix audio loading bug
+
+    var fileId = this.getFileId(url);
+
+    if(this.buffers[fileId] != undefined)
+    {
+      return;
+    }
+
+    this.buffers[fileId] = {duration: 0, isSourceLoaded: false, buffer: 0 };
 
     var request = new XMLHttpRequest();
     request.open("GET", url, true);
@@ -174,9 +210,9 @@ var Sound = function(){
         request.response,
         function(b) {
 
-          ptr.buffer = b;
-          ptr.bufferDuration = ptr.buffer.duration - 0.050;
-          ptr.isSourceLoaded = true;
+          ptr.buffers[fileId].buffer = b;
+          ptr.buffers[fileId].duration = b.duration - 0.050;
+          ptr.buffers[fileId].isSourceLoaded = true;
 
         },
 
@@ -199,11 +235,13 @@ var Sound = function(){
 
     if (!this.buffer)
     {
-      return;
+      console.log(this.buffer);
+      return false;
     }
 
     var source = this.audioContext.createBufferSource();
     source.buffer = this.buffer;
+
 
     var r1 = Math.random();
     var r2 = Math.random();
@@ -277,6 +315,8 @@ var Sound = function(){
       this.grainTime = this.parameters.regionStart.value * this.bufferDuration;
     }
 
+    return true;
+
   }
 
   this.setState  = function(stateId)
@@ -298,7 +338,13 @@ var Sound = function(){
         }
     }
 
-    this.loadSample("samples/" + this.parameters.file.value);
+    var bobj = this.buffers[this.getFileId(this.parameters.file.value)];
+    this.buffer =  bobj.buffer;
+    this.bufferDuration = bobj.bufferDuration;
+    this.isSourceLoaded = bobj.isSourceLoaded;
+
+    console.log(this.buffer);
+
   }
 
   //IOS workaround
@@ -326,6 +372,14 @@ var Sound = function(){
       }
     }, 10);
 
+  }
+
+  this.getFileId = function(url)
+  {
+    var fileId = url.substring(url.lastIndexOf('/') + 1);
+    fileId = fileId.substring(0, fileId.lastIndexOf('.'));
+
+    return fileId
   }
 
 
