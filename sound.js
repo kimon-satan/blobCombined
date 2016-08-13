@@ -135,12 +135,12 @@ var Sound = function(){
     }
 
     //for each state load the sound file
+    var count = 0;
     for(var s in SoundStates)
     {
-      this.loadSample("samples/" + SoundStates[s].file.value);
+      this.loadSample("samples/" + SoundStates[s].file.value, count == 0);
+      count ++;
     }
-    //just swaps the pointer to the sound file
-    this.setState(0);
 
 
   }
@@ -186,7 +186,7 @@ var Sound = function(){
       }
   }
 
-  this.loadSample = function(url) {
+  this.loadSample = function(url, setState) {
 
     //TODO fix audio loading bug
 
@@ -214,6 +214,11 @@ var Sound = function(){
           ptr.buffers[fileId].duration = b.duration - 0.050;
           ptr.buffers[fileId].isSourceLoaded = true;
 
+          if(setState)
+          {
+            ptr.setState(0); // bit hacky but safe
+          }
+
         },
 
         function(b) {
@@ -233,11 +238,12 @@ var Sound = function(){
   {
     //plays an individual grain
 
+
     if (!this.buffer)
     {
-      console.log(this.buffer);
       return false;
     }
+
 
     var source = this.audioContext.createBufferSource();
     source.buffer = this.buffer;
@@ -298,6 +304,8 @@ var Sound = function(){
 
       this.grainTime += this.parameters.speed.value * this.parameters.grainDuration.value;
 
+
+
       //grain time wrapping
       var regionStart = this.parameters.regionStart.value * this.bufferDuration;
       var regionEnd = Math.min(this.bufferDuration, regionStart  + this.parameters.regionLength.value);
@@ -314,6 +322,8 @@ var Sound = function(){
     }else{
       this.grainTime = this.parameters.regionStart.value * this.bufferDuration;
     }
+
+
 
     return true;
 
@@ -340,10 +350,9 @@ var Sound = function(){
 
     var bobj = this.buffers[this.getFileId(this.parameters.file.value)];
     this.buffer =  bobj.buffer;
-    this.bufferDuration = bobj.bufferDuration;
+    this.bufferDuration = bobj.duration;
     this.isSourceLoaded = bobj.isSourceLoaded;
 
-    console.log(this.buffer);
 
   }
 

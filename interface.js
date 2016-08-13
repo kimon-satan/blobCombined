@@ -140,6 +140,12 @@ $('document').ready(function(){
           e.clientY/canvas.height
         );
 
+        setEnvTargets(1.) //gesture 1
+        isGesture = true;
+
+
+              numTouches++;
+              newTouch = true;
 
    }, false);
 
