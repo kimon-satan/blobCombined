@@ -18,6 +18,7 @@ var blobFragmentShader = `
   uniform float scale;
 
   uniform float c_time;
+  uniform float o_time;
 
   //Blob characteristics
 
@@ -203,7 +204,7 @@ var blobFragmentShader = `
 
       float o_noise = noise(vec3(ustheta2 * o_step * move.x , ustheta2 * o_step * move.y , 0.)); //symmetrical noise
       float c_noise = noise(vec3(cos(theta) + c_time, sin(theta) + c_time, 0.));
-      float r_noise = noise(vec3(cos(theta) + c_time, sin(theta) + c_time, 10.));
+      float r_noise = noise(vec3(cos(theta) + o_time, sin(theta) + o_time, 10.));
 
       //edges
       float o_edge = 0.7 + o_amp * 0.3 * o_noise + o_amp * 0.3 * r_noise;

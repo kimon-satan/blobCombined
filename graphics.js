@@ -60,6 +60,7 @@ var Graphics = function(){
 	this.uniforms = {
 		time:       { value: 1.0 },
 		c_time: 		{value: 1.0 },
+		o_time: 		{value: 1.0 },
 		resolution: { value: new THREE.Vector2() },
 		mouse:  	{value: new THREE.Vector2(0,0) },
 		scale:      {value: 2.5,  min: 1.0, max: 10.0},
@@ -74,6 +75,7 @@ var Graphics = function(){
 		o_step:      {value: 20.0,  min: 0.0, max: 30.0},
 		c_amp:      {value: 0.1,  min: 0.0, max: 1.0},
 		c_freq:      {value: 1.0,  min: 0.1, max: 10.0, },
+		o_freq:      {value: 1.0,  min: 0.1, max: 10.0, },
 		theta_warp:      {value: 1.5,  min: 0.0, max: 4.0},
 		move_mul:      {value: 0.,  min: 0.0, max: 1.0},
 		move_add:      {value: 0.,  min: 0.0, max: 1.0},
@@ -142,10 +144,15 @@ var Graphics = function(){
 				this.uniforms.c_size.value = this.currState.c_size - 0.4 * env[1].z;
 				this.uniforms.c_amp.value = this.currState.c_amp + 0.25 * env[1].z;
 				this.uniforms.c_freq.value = this.currState.c_freq + env[1].z * 10.0;
+				this.uniforms.o_freq.value = this.currState.o_freq + env[1].z * 12.0;
 			}
 			else if(currentGesture == 2)
 			{
 				//do something else
+				this.uniforms.c_size.value = this.currState.c_size + 0.2 * env[1].z;
+				this.uniforms.o_amp.value = this.currState.o_amp + 0.75 * env[1].z;
+				this.uniforms.o_freq.value = this.currState.o_freq + env[1].z * 20.0;
+				this.uniforms.c_freq.value = this.currState.c_freq + env[1].z * 10.0;
 
 			}
 		}
@@ -158,7 +165,7 @@ var Graphics = function(){
 		//update the various time uniforms last
 		var delta = ellapsedTime - this.uniforms.time.value;
 		this.uniforms.c_time.value += delta * this.uniforms.c_freq.value;
-
+		this.uniforms.o_time.value += delta * this.uniforms.o_freq.value;
 
 		this.uniforms.time.value = ellapsedTime;
 		this.uniforms.mouse.value.copy(mousePos);

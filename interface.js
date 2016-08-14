@@ -195,7 +195,6 @@ function gestureMove(pos)
 function gestureEnd()
 {
   setEnvTargets(0.)
-  currentGesture = 0;
   isGesture = false;
 
 }
@@ -253,6 +252,11 @@ function gestureEnd()
           envsActive = true;
           break;
         }
+      }
+
+      if(!envsActive)
+      {
+        currentGesture = 0;
       }
 
       graphics.draw(ellapsedTime, mousePos);
