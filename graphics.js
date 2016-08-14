@@ -11,6 +11,8 @@ var col2 = new THREE.Vector3(.59,0,0);
 //var col1 = lightColorPalette(colseed);
 //var col2 = lightColorPalette(colseed2);
 
+//TODO replace with similar shades of red and pink
+
 function darkColorPalette(seed)
 {
 
@@ -52,6 +54,8 @@ var Graphics = function(){
 	this.currState;
 	this.stateDeltas;
 	this.stateEnvelope = new Envelope(5, 60);
+	this.currentGesture = 0;
+
 
 	this.uniforms = {
 		time:       { value: 1.0 },
@@ -132,9 +136,18 @@ var Graphics = function(){
 
 		if(envsActive)
 		{
-			this.uniforms.c_size.value = this.currState.c_size - 0.4 * env[1].z;
-			this.uniforms.c_amp.value = this.currState.c_amp + 0.25 * env[1].z;
-			this.uniforms.c_freq.value = this.currState.c_freq + env[1].z * 10.0;
+			if(currentGesture == 1) //maybe change with envsActive ?
+			{
+				//NB. will this cause an abrupt cut
+				this.uniforms.c_size.value = this.currState.c_size - 0.4 * env[1].z;
+				this.uniforms.c_amp.value = this.currState.c_amp + 0.25 * env[1].z;
+				this.uniforms.c_freq.value = this.currState.c_freq + env[1].z * 10.0;
+			}
+			else if(currentGesture == 2)
+			{
+				//do something else
+
+			}
 		}
 
 		if(isGesture)
@@ -148,7 +161,7 @@ var Graphics = function(){
 
 
 		this.uniforms.time.value = ellapsedTime;
-		this.uniforms.mouse.value = mousePos;
+		this.uniforms.mouse.value.copy(mousePos);
 
 
 		this.renderer.render( this.scene, this.camera );
@@ -296,13 +309,7 @@ var Graphics = function(){
 		}
 
 	}
-	///////////////////////////////////////////////////////REACTIONS///////////////////////////
 
-	this.triggerReaction = function()
-	{
-
-
-	}
 
 	////////////////////////////////////////////////////////////////////////////
 

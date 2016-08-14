@@ -1,5 +1,6 @@
 var graphics, sound, env, startTime, ellapsedTime, accumulator, canvas;
 var envsActive, touchStartPos, numTouches, newTouch , isGesture, isMouseDown;
+var currentGesture;
 
 $('document').ready(function(){
 
@@ -58,7 +59,6 @@ $('document').ready(function(){
 
     canvas.addEventListener('touchend', function(e) {
 
-
       gestureEnd();
     }, false);
 
@@ -110,6 +110,7 @@ $('document').ready(function(){
 function gestureStart()
 {
   isGesture = false;
+  currentGesture = 0;
 
   touchStartPos.copy(mousePos);
 
@@ -134,6 +135,8 @@ function gestureMove(pos)
     var v1 = new THREE.Vector2().subVectors(pos ,mousePos);
     mousePos.copy(pos);
 
+
+
     var v2 = new THREE.Vector2().subVectors(mousePos, touchStartPos);
 
     if(v1.length() < 0.002)
@@ -143,14 +146,41 @@ function gestureMove(pos)
       return;
     }
 
-    if(Math.abs(v2.angle() - Math.PI/2) < 0.2)
+
+
+    if(Math.abs(v2.angle() - Math.PI/2) < 0.2 && v1.y > 0)
     {
-      setEnvTargets(1.) //gesture 1
-      isGesture = true;
+
+      if(currentGesture == 0) //only set the getsure if one hasn't already been assigned
+      {
+        currentGesture = 1;
+      }
+
+      if(currentGesture == 1)
+      {
+        console.log("g1");
+        isGesture = true;
+        setEnvTargets(1.);
+      }
     }
-    else if (Math.abs(v2.angle() - Math.PI * 1.5) < 0.2)
+    else if (Math.abs(v2.angle() - Math.PI * 1.5) < 0.2 && v1.y < 0)
     {
-      console.log("gesture 2") //gesture 2
+
+
+
+      if(currentGesture == 0)
+      {
+        currentGesture = 2;
+      }
+
+      if(currentGesture == 2) // NB. should be optimised
+      {
+        console.log("g2");
+
+        isGesture = true;
+        setEnvTargets(1.);
+      }
+
     }
     else
     {
@@ -165,7 +195,7 @@ function gestureMove(pos)
 function gestureEnd()
 {
   setEnvTargets(0.)
-
+  currentGesture = 0;
   isGesture = false;
 
 }
@@ -196,6 +226,7 @@ function gestureEnd()
 
     if(accumulator > 1.0/60)
     {
+
 
       if(newTouch)
       {
