@@ -1,5 +1,5 @@
 var graphics, sound, env, startTime, ellapsedTime, accumulator, canvas;
-var envsActive, touchStartPos, numTouches, newTouch , isGesture;
+var envsActive, touchStartPos, numTouches, newTouch , isGesture, isMouseDown;
 
 $('document').ready(function(){
 
@@ -14,6 +14,7 @@ $('document').ready(function(){
   accumulator = 0;
   isGesture = false;
   newTouch = false;
+  isMouseDown = false;
 
   env = [
     new Envelope2(0.1,0.01,60),
@@ -32,80 +33,33 @@ $('document').ready(function(){
         e.touches[0].clientY / canvas.height
       );
 
-      isGesture = false;
-
-      touchStartPos.copy(mousePos);
 
       if(!sound.isUnlocked)
       {
         sound.unlock();
       }
 
-      //hard restart
-      //... might be good to have only some envelopes working this way
-      for(var i = 0; i < env.length; i++)
-      {
-        env[i].targetVal = 0.0;
-        env[i].z = 0.0;
-      }
-
-      numTouches = 0;
+      gestureStart();
 
 
     }, false);
 
     canvas.addEventListener('touchmove', function(e){
 
-      //TODO detect when touches are not moving at all in update
 
-      numTouches++;
-      newTouch = true;
+      var p = new THREE.Vector2(
+        e.touches[0].clientX /canvas.width,
+        e.touches[0].clientY / canvas.height
+      );
 
-      if(numTouches > 5){
-
-        var n = new THREE.Vector2(
-          e.touches[0].clientX /canvas.width,
-          e.touches[0].clientY / canvas.height
-        );
-
-        var v1 = new THREE.Vector2().subVectors(n ,mousePos);
-        mousePos.copy(n);
-
-        var v2 = new THREE.Vector2().subVectors(mousePos, touchStartPos);
-
-        if(v1.length() < 0.002)
-        {
-          isGesture = false;
-          setEnvTargets(0);
-          return;
-        }
-
-        if(Math.abs(v2.angle() - Math.PI/2) < 0.2)
-        {
-          setEnvTargets(1.) //gesture 1
-          isGesture = true;
-        }
-        else if (Math.abs(v2.angle() - Math.PI * 1.5) < 0.2)
-        {
-          console.log("gesture 2") //gesture 2
-        }
-        else
-        {
-          setEnvTargets(0.)
-          isGesture = false;
-        }
-
-      }
-
+      gestureMove(p);
 
     }, false);
 
     canvas.addEventListener('touchend', function(e) {
 
-      setEnvTargets(0.)
 
-      isGesture = false;
-
+      gestureEnd();
     }, false);
 
 
@@ -120,34 +74,108 @@ $('document').ready(function(){
         sound.isUnlocked = true;
       }
 
-      setEnvTargets(1.)
+      gestureStart();
 
-
+      isMouseDown = true;
 
 
     }, false);
 
-    canvas.addEventListener('mouseup', function() {
 
-      setEnvTargets(0.)
-
-    }, false);
 
   canvas.addEventListener("mousemove", function (e) {
 
-        mousePos.set(
+        var pos = new THREE.Vector2(
           e.clientX/canvas.width,
           e.clientY/canvas.height
         );
 
-        setEnvTargets(1.) //gesture 1
-        isGesture = true;
-
-
-              numTouches++;
-              newTouch = true;
+        if(isMouseDown)
+        {
+          gestureMove(pos);
+        }
 
    }, false);
+
+   canvas.addEventListener('mouseup', function() {
+
+     isMouseDown = false;
+     gestureEnd();
+
+   }, false);
+
+
+////////////////////////////////////////////////////////
+
+function gestureStart()
+{
+  isGesture = false;
+
+  touchStartPos.copy(mousePos);
+
+  //hard restart
+  //... might be good to have only some envelopes working this way
+  for(var i = 0; i < env.length; i++)
+  {
+    env[i].targetVal = 0.0;
+    env[i].z = 0.0;
+  }
+
+  numTouches = 0;
+}
+
+function gestureMove(pos)
+{
+  numTouches++;
+  newTouch = true;
+
+  if(numTouches > 5){
+
+    var v1 = new THREE.Vector2().subVectors(pos ,mousePos);
+    mousePos.copy(pos);
+
+    var v2 = new THREE.Vector2().subVectors(mousePos, touchStartPos);
+
+    if(v1.length() < 0.002)
+    {
+      isGesture = false;
+      setEnvTargets(0);
+      return;
+    }
+
+    if(Math.abs(v2.angle() - Math.PI/2) < 0.2)
+    {
+      setEnvTargets(1.) //gesture 1
+      isGesture = true;
+    }
+    else if (Math.abs(v2.angle() - Math.PI * 1.5) < 0.2)
+    {
+      console.log("gesture 2") //gesture 2
+    }
+    else
+    {
+      setEnvTargets(0.)
+      isGesture = false;
+    }
+
+  }
+
+}
+
+function gestureEnd()
+{
+  setEnvTargets(0.)
+
+  isGesture = false;
+
+}
+
+
+
+
+
+/////////////////////////////////////////////////////////
+
 
   function setEnvTargets(target)
   {
