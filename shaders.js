@@ -203,6 +203,7 @@ var blobFragmentShader = `
 
 
       float o_noise = noise(vec3(ustheta2 * o_step * move.x , ustheta2 * o_step * move.y , 0.)); //symmetrical noise
+
       float c_noise = noise(vec3(cos(theta) + c_time, sin(theta) + c_time, 0.));
       float r_noise = noise(vec3(cos(theta) + o_time, sin(theta) + o_time, 10.));
 

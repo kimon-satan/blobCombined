@@ -158,7 +158,6 @@ function gestureMove(pos)
 
       if(currentGesture == 1)
       {
-        console.log("g1");
         isGesture = true;
         setEnvTargets(1.);
       }
@@ -175,8 +174,6 @@ function gestureMove(pos)
 
       if(currentGesture == 2) // NB. should be optimised
       {
-        console.log("g2");
-
         isGesture = true;
         setEnvTargets(1.);
       }

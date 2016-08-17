@@ -4,8 +4,7 @@ var black = new THREE.Vector3(0,0,0);
 var colseed = Math.random();
 var colseed2 = (colseed + (0.3 + Math.random() * 0.3))%1.;
 
-
-var col1 = new THREE.Vector3(.53,.53,.53)
+var col1 = new THREE.Vector3(.53,.53,.53);
 var col2 = new THREE.Vector3(.59,0,0);
 
 //var col1 = lightColorPalette(colseed);
@@ -71,6 +70,7 @@ var Graphics = function(){
 		c_scale:      {value: 1.0,  min: 0.1, max: 1.0},
 		c_fade:      {value: 0.0,  min: 0.0, max: 1.0},
 		cell_detail:   {value: 0.0,  min: 0.0, max: 4.0},
+		r_amp:      {value: 0.1,  min: 0.0, max: 0.8}, //needs changing
 		o_amp:      {value: 0.1,  min: 0.0, max: 0.8}, //needs changing
 		o_step:      {value: 20.0,  min: 0.0, max: 30.0},
 		c_amp:      {value: 0.1,  min: 0.0, max: 1.0},
