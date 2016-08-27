@@ -1,13 +1,23 @@
 var graphics, sound, startTime, ellapsedTime, accumulator, canvas;
 var envsActive, touchStartPos, numTouches, newTouch , isGesture, isMouseDown;
 var env, stateEnvelope, stateIndex, changingState; //handling progression
-var currentGesture;
+var currentGesture, reactionMap;
+
 
 $('document').ready(function(){
 
   graphics = new Graphics();
+  graphics.init();
   sound = new Sound();
   var mousePos = new THREE.Vector2(0,0);
+
+  reactionMap = [
+    undefined,
+    {graphics: "shudderThetaUp", sound: 0 },
+    {graphics: "shudderThetaDown", sound: 1 },
+    {graphics: "shudderOut", sound: 2 },
+    {graphics: "shudderIn", sound: 3 }
+  ];
 
   touchStartPos = new THREE.Vector2();
 
@@ -21,6 +31,7 @@ $('document').ready(function(){
   stateEnvelope = new Envelope(10, 60);
   changingState = false;
   stateIndex = 0;
+
   graphics.initState();
   changeState();
 
@@ -143,17 +154,13 @@ function gestureMove(pos)
     mousePos.copy(pos);
 
     var v2 = new THREE.Vector2().subVectors(mousePos, touchStartPos);
+    var a = v2.angle();
 
     if(v1.length() < 0.002)
     {
-      isGesture = false;
-      setEnvTargets(0);
-      return;
+        gestureEnd();
     }
-
-    var a = v2.angle();
-
-    if(Math.abs(a - Math.PI/2) < 0.2 && v1.y > 0)
+    else if(Math.abs(a - Math.PI/2) < 0.2 && v1.y > 0)
     {
         updateGesture(1);
     }
@@ -171,8 +178,7 @@ function gestureMove(pos)
     }
     else
     {
-      setEnvTargets(0.)
-      isGesture = false;
+      gestureEnd();
     }
 
   }
@@ -183,21 +189,36 @@ function gestureEnd()
 {
   setEnvTargets(0.)
   isGesture = false;
-
 }
 
 function updateGesture(ng)
 {
-  if(currentGesture == 0)
+  isGesture = false;
+
+  if(currentGesture == 0 )
   {
+    isGesture = true;
     currentGesture = ng;
-    sound.setReaction(currentGesture -1);
+    if(reactionMap[currentGesture] != undefined)
+    {
+      sound.setReaction(reactionMap[currentGesture].sound);
+      graphics.setReaction(reactionMap[currentGesture].graphics);
+    }
+    else
+    {
+      sound.setReaction();
+      graphics.setReaction();
+    }
   }
 
   if(currentGesture == ng)
   {
     isGesture = true;
     setEnvTargets(1.);
+  }
+  else
+  {
+      isGesture = false;
   }
 }
 
@@ -260,14 +281,14 @@ function updateGesture(ng)
       {
         currentGesture = 0;
       }
-
-      if(isGesture)
+      else if(isGesture)
       {
         updateState();
       }
 
-      graphics.draw(ellapsedTime, mousePos);
-      sound.update(ellapsedTime, mousePos); // ultimately we don't need mousePos
+      // ultimately we don't need mousePos
+      graphics.draw(ellapsedTime, mousePos, envsActive);
+      sound.update(ellapsedTime, mousePos);
     }
 
   	requestAnimationFrame( render );
@@ -280,6 +301,8 @@ function updateGesture(ng)
 
 function updateState()
 {
+
+
   //TODO make methods for shifting between vectors
   if(!changingState)return;
 
@@ -288,7 +311,15 @@ function updateState()
   if(stateEnvelope.z < 0.99)
   {
     //call the graphics update
+    var r = undefined;
+
+    if(reactionMap[currentGesture] != undefined)
+    {
+      r = reactionMap[currentGesture].graphics;
+    }
+
     graphics.updateState();
+
   }
   else
   {
@@ -306,5 +337,5 @@ function changeState()
   changingState = true;
 
   //call the graphics update
-  graphics.changeState();
+  graphics.changeState(stateIndex);
 }

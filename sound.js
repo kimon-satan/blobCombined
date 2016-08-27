@@ -357,6 +357,11 @@ var Sound = function(){
 
   this.setReaction  = function(reactionId)
   {
+
+    //TODO make the same as graphics
+
+    if(reactionId == undefined)return;
+
     if(SoundReactions[reactionId] == undefined)
     {
       console.log("reaction: " + reactionId + " not found")
