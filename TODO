@@ -1,3 +1,4 @@
+Logicise states vs reactions ... ensure mins and maxes
 Get growth and start of graphics right
 Do explosion / splat part
 
@@ -11,4 +12,11 @@ Jump to granular section ...
 How to indicate motion / start with a grid
 Workout how to record and render branches moving on mobile screen
 
+//FINAL Outcome
+
+- basic intro (sounds will probably be a bit static)
+- explosions & main screen
+- congealing into avatars (might all look the same)
+- creating branches (probably no background rendered)
+- eating branches (with misty mashup)
 
