@@ -27,7 +27,7 @@ var files = [
 '66637_crying-baby-select.wav',
 ];
 
-var SoundStates =
+var SoundReactions =
 [
   {
     file: {value: "20472_woodpigeonnr_02.wav"},
@@ -102,7 +102,7 @@ var Sound = function(){
   //IOS hack
   this.isUnlocked = false;
 
-  this.state = 0;
+  this.reaction = 0;
   this.seed = Math.random();
 
 
@@ -160,11 +160,11 @@ var Sound = function(){
       this.compressor = this.audioContext.destination;
     }
 
-    //for each state load the sound file
+    //for each reaction load the sound file
     var count = 0;
-    for(var s in SoundStates)
+    for(var s in SoundReactions)
     {
-      this.loadSample("samples/" + SoundStates[s].file.value, count == 0);
+      this.loadSample("samples/" + SoundReactions[s].file.value, count == 0);
       count ++;
     }
 
@@ -212,7 +212,7 @@ var Sound = function(){
       }
   }
 
-  this.loadSample = function(url, setState) {
+  this.loadSample = function(url, setReaction) {
 
     //TODO fix audio loading bug
 
@@ -240,9 +240,9 @@ var Sound = function(){
           ptr.buffers[fileId].duration = b.duration - 0.050;
           ptr.buffers[fileId].isSourceLoaded = true;
 
-          if(setState)
+          if(setReaction)
           {
-            ptr.setState(0); // bit hacky but safe
+            ptr.setReaction(0); // bit hacky but safe
           }
 
         },
@@ -355,19 +355,19 @@ var Sound = function(){
 
   }
 
-  this.setState  = function(stateId)
+  this.setReaction  = function(reactionId)
   {
-    if(SoundStates[stateId] == undefined)
+    if(SoundReactions[reactionId] == undefined)
     {
-      console.log("state: " + stateId + " not found")
+      console.log("reaction: " + reactionId + " not found")
       return;
     }
 
-    for(property in SoundStates[stateId])
+    for(property in SoundReactions[reactionId])
     {
-        for(p in SoundStates[stateId][property])
+        for(p in SoundReactions[reactionId][property])
         {
-          this.parameters[property][p] = SoundStates[stateId][property][p];
+          this.parameters[property][p] = SoundReactions[reactionId][property][p];
         }
 
         if(this.parameters[property].map == "rand")
@@ -404,9 +404,9 @@ var Sound = function(){
     source.noteOn(0);
 
     var host = this;
-    // by checking the play state after some time, we know if we're really unlocked
+    // by checking the play reaction after some time, we know if we're really unlocked
     setTimeout(function() {
-      if((source.playbackState === source.PLAYING_STATE || source.playbackState === source.FINISHED_STATE))
+      if((source.playbackReaction === source.PLAYING_STATE || source.playbackReaction === source.FINISHED_STATE))
       {
         host.isUnlocked = true;
         console.log("unlocked")

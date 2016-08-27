@@ -1,5 +1,6 @@
-var graphics, sound, env, startTime, ellapsedTime, accumulator, canvas;
+var graphics, sound, startTime, ellapsedTime, accumulator, canvas;
 var envsActive, touchStartPos, numTouches, newTouch , isGesture, isMouseDown;
+var env, stateEnvelope, stateIndex, changingState; //handling progression
 var currentGesture;
 
 $('document').ready(function(){
@@ -16,6 +17,12 @@ $('document').ready(function(){
   isGesture = false;
   newTouch = false;
   isMouseDown = false;
+
+  stateEnvelope = new Envelope(10, 60);
+  changingState = false;
+  stateIndex = 0;
+  graphics.initState();
+  changeState();
 
   env = [
     new Envelope2(0.1,0.01,60),
@@ -184,7 +191,7 @@ function updateGesture(ng)
   if(currentGesture == 0)
   {
     currentGesture = ng;
-    sound.setState(currentGesture -1);
+    sound.setReaction(currentGesture -1);
   }
 
   if(currentGesture == ng)
@@ -254,6 +261,11 @@ function updateGesture(ng)
         currentGesture = 0;
       }
 
+      if(isGesture)
+      {
+        updateState();
+      }
+
       graphics.draw(ellapsedTime, mousePos);
       sound.update(ellapsedTime, mousePos); // ultimately we don't need mousePos
     }
@@ -265,3 +277,34 @@ function updateGesture(ng)
   render();
 
 });
+
+function updateState()
+{
+  //TODO make methods for shifting between vectors
+  if(!changingState)return;
+
+  stateEnvelope.step();
+
+  if(stateEnvelope.z < 0.99)
+  {
+    //call the graphics update
+    graphics.updateState();
+  }
+  else
+  {
+      changingState = false;
+      changeState(); // keep moving through states
+  }
+}
+
+function changeState()
+{
+  stateIndex += 1;
+
+  stateEnvelope.z = 0.0;
+  stateEnvelope.targetVal = 1.0;
+  changingState = true;
+
+  //call the graphics update
+  graphics.changeState();
+}
