@@ -52,7 +52,32 @@ var SoundStates =
     grainSpacing:{value: 0.05 , min:0.04, max:0.16, map:3  },
     regionStart: {value: 0.0 , min:0.9, max: 0.0 , map: 3 },
     regionLength: {value: 0.0 }
+  },
+  {
+    file: {value: "66637_crying-baby-2b.wav"},
+    amp: {value: 0.0, min: 0.0, max: 1.0, map: 1},
+    speed: {value: 0.0 },
+    pitch: {value: 1.0, min: 300.0, max: 800, map: "rand" },
+    pitchRandomization: {value: 0.0 },
+    timeRandomization:{value: 0.0 },
+    grainDuration:{value: 0.1 },
+    grainSpacing:{value: 0.05 , min:0.04, max:0.15, map:3  },
+    regionStart: {value: 0.0 , min:0.0, max: 1.0 , map: 3 },
+    regionLength: {value: 0.0 }
+  },
+  {
+    file: {value: "66637_crying-baby-2b.wav"},
+    amp: {value: 0.0, min: 0.0, max: 1.0, map: 1},
+    speed: {value: 0.0 },
+    pitch: {value: 1.0, min: 300.0, max: 800, map: "rand" },
+    pitchRandomization: {value: 0.0 },
+    timeRandomization:{value: 0.0 },
+    grainDuration:{value: 0.1, min: 0.01, max: 0.1, map: 3 },
+    grainSpacing:{value: 0.05 , min:0.08, max:0.01, map:3  },
+    regionStart: {value: 0.0 , min:1.0, max: 0.0 , map: 3 },
+    regionLength: {value: 0.0 }
   }
+
 
 ]
 
@@ -332,6 +357,12 @@ var Sound = function(){
 
   this.setState  = function(stateId)
   {
+    if(SoundStates[stateId] == undefined)
+    {
+      console.log("state: " + stateId + " not found")
+      return;
+    }
+
     for(property in SoundStates[stateId])
     {
         for(p in SoundStates[stateId][property])

@@ -117,7 +117,7 @@ Envelope = function(time, sampleRate)
     {
       this.z = v;
     }
-    
+
     return this.z;
   }
 
@@ -224,3 +224,5 @@ function hslToRgb(h, s, l){
 
     return [r,g,b];
 }
+
+Math.fmod = function (a,b) { return Number((a - (Math.floor(a / b) * b)).toPrecision(8)); };

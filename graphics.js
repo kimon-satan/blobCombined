@@ -162,6 +162,24 @@ var Graphics = function(){
 				this.uniforms.c_freq.value = this.currState.c_freq + env[1].z * 10.0;
 
 			}
+			else if(currentGesture == 3)
+			{
+				//do something else
+				this.uniforms.c_size.value = this.currState.c_size + 0.2 * env[1].z;
+				this.uniforms.o_amp.value = this.currState.o_amp + 0.5 * env[1].z;
+				this.uniforms.r_freq.value = this.currState.r_freq + env[1].z * 20.0;
+				this.uniforms.c_freq.value = this.currState.c_freq + env[1].z * 10.0;
+				this.uniforms.theta_warp.value = this.currState.theta_warp * (1.0- env[1].z);
+			}
+			else if (currentGesture == 4)
+			{
+				//do something else
+				this.uniforms.c_size.value = this.currState.c_size + 0.2 * env[1].z;
+				this.uniforms.o_amp.value = this.currState.o_amp + 0.5 * env[1].z;
+				this.uniforms.r_freq.value = this.currState.r_freq + env[1].z * 20.0;
+				this.uniforms.c_freq.value = this.currState.c_freq + env[1].z * 10.0;
+				this.uniforms.theta_warp.value = this.currState.theta_warp / (1.0- env[1].z);
+			}
 		}
 
 		if(isGesture)

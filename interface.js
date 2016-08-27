@@ -135,8 +135,6 @@ function gestureMove(pos)
     var v1 = new THREE.Vector2().subVectors(pos ,mousePos);
     mousePos.copy(pos);
 
-
-
     var v2 = new THREE.Vector2().subVectors(mousePos, touchStartPos);
 
     if(v1.length() < 0.002)
@@ -146,40 +144,23 @@ function gestureMove(pos)
       return;
     }
 
+    var a = v2.angle();
 
-
-    if(Math.abs(v2.angle() - Math.PI/2) < 0.2 && v1.y > 0)
+    if(Math.abs(a - Math.PI/2) < 0.2 && v1.y > 0)
     {
-
-      if(currentGesture == 0) //only set the getsure if one hasn't already been assigned
-      {
-        currentGesture = 1;
-        sound.setState(currentGesture -1);
-      }
-
-      if(currentGesture == 1)
-      {
-        isGesture = true;
-        setEnvTargets(1.);
-      }
+        updateGesture(1);
     }
-    else if (Math.abs(v2.angle() - Math.PI * 1.5) < 0.2 && v1.y < 0)
+    else if (Math.abs(a - Math.PI * 1.5) < 0.2 && v1.y < 0)
     {
-
-
-
-      if(currentGesture == 0)
-      {
-        currentGesture = 2;
-        sound.setState(currentGesture -1);
-      }
-
-      if(currentGesture == 2) // NB. should be optimised
-      {
-        isGesture = true;
-        setEnvTargets(1.);
-      }
-
+        updateGesture(2);
+    }
+    else if(Math.abs(a - Math.PI) < 0.2 && v1.x < 0)
+    {
+        updateGesture(3);
+    }
+    else if(Math.min(a, Math.abs(a - Math.PI * 2.)) < 0.2 && v1.x > 0)
+    {
+        updateGesture(4);
     }
     else
     {
@@ -196,6 +177,21 @@ function gestureEnd()
   setEnvTargets(0.)
   isGesture = false;
 
+}
+
+function updateGesture(ng)
+{
+  if(currentGesture == 0)
+  {
+    currentGesture = ng;
+    sound.setState(currentGesture -1);
+  }
+
+  if(currentGesture == ng)
+  {
+    isGesture = true;
+    setEnvTargets(1.);
+  }
 }
 
 
