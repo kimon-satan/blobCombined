@@ -154,6 +154,7 @@ function gestureMove(pos)
       if(currentGesture == 0) //only set the getsure if one hasn't already been assigned
       {
         currentGesture = 1;
+        sound.setState(currentGesture -1);
       }
 
       if(currentGesture == 1)
@@ -170,6 +171,7 @@ function gestureMove(pos)
       if(currentGesture == 0)
       {
         currentGesture = 2;
+        sound.setState(currentGesture -1);
       }
 
       if(currentGesture == 2) // NB. should be optimised

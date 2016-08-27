@@ -52,7 +52,7 @@ var Graphics = function(){
 	this.prevState;
 	this.currState;
 	this.stateDeltas;
-	this.stateEnvelope = new Envelope(5, 60);
+	this.stateEnvelope = new Envelope(10, 60);
 	this.currentGesture = 0;
 
 
@@ -60,34 +60,41 @@ var Graphics = function(){
 		time:       { value: 1.0 },
 		c_time: 		{value: 1.0 },
 		o_time: 		{value: 1.0 },
+		r_time: 		{value: 1.0 },
 		resolution: { value: new THREE.Vector2() },
 		mouse:  	{value: new THREE.Vector2(0,0) },
 		scale:      {value: 2.5,  min: 1.0, max: 10.0},
 		seed:      {value: 0.01,  min: 0., max: 1., step: 0.01},
 		slices:      {value: 8.0,  min: 1.0, max: 20.0},
 		segments:      {value: 1.0,  min: 1.0, max: 10.0},
+		cell_detail:   {value: 0.0,  min: 0.0, max: 4.0},
+		theta_warp:      {value: 1.5,  min: 0.0, max: 4.0},
+		cell_detune:      {value: .25,  min: 0., max: 1., step: 0.01},
+
 		c_size:      {value: 0.5,  min: 0.1, max: 0.8},
 		c_scale:      {value: 1.0,  min: 0.1, max: 1.0},
-		c_fade:      {value: 0.0,  min: 0.0, max: 1.0},
-		cell_detail:   {value: 0.0,  min: 0.0, max: 4.0},
-		r_amp:      {value: 0.1,  min: 0.0, max: 0.8}, //needs changing
-		o_amp:      {value: 0.1,  min: 0.0, max: 0.8}, //needs changing
-		o_step:      {value: 20.0,  min: 0.0, max: 30.0},
-		c_amp:      {value: 0.1,  min: 0.0, max: 1.0},
 		c_freq:      {value: 1.0,  min: 0.1, max: 10.0, },
+		c_fade:      {value: 0.0,  min: 0.0, max: 1.0},
+		c_amp:      {value: 0.1,  min: 0.0, max: 1.0},
+
+		r_amp:      {value: 0.1,  min: 0.0, max: 0.8},
+		r_freq:      {value: 1.0,  min: 0.1, max: 10.0, },
+
+		o_amp:      {value: 0.1,  min: 0.0, max: 0.8},
+		o_step:      {value: 20.0,  min: 0.0, max: 30.0},
 		o_freq:      {value: 1.0,  min: 0.1, max: 10.0, },
-		theta_warp:      {value: 1.5,  min: 0.0, max: 4.0},
-		move_mul:      {value: 0.,  min: 0.0, max: 1.0},
-		move_add:      {value: 0.,  min: 0.0, max: 1.0},
-		move_freq:      {value: 2.,  min: 0.01, max: 10.0},
-		move_distort: 	{value: new THREE.Vector2(.4,2.),  min: 0.0, max: 4.0},
+
+		edge_amp:      {value: 0.,  min: 0.0, max: 1.0},
+		edge_freq:      {value: 2.,  min: 0.01, max: 10.0},
+		o_distort: 	{value: new THREE.Vector2(.4,2.),  min: 0.0, max: 4.0},
+
 		bg_color:        {value: new THREE.Vector3(0.13, 0.13, 0.13),  type: "color"},
 		fg_color:        {value: new THREE.Vector3(0.98,0.43,0.43),  type: "color"},
 		hl_color:        {value: new THREE.Vector3(0.51,0.,0.),  type: "color"},
 		fg_pow:      {value: 1.,  min: 0.01, max: 3.0},
 		hl_pow:      {value: 1.,  min: 0.01, max: 3.0},
 		hl_mul:      {value: 4.,  min: 2., max: 15.},
-		cell_detune:      {value: .25,  min: 0., max: 1., step: 0.01}
+
 
 	};
 
@@ -144,14 +151,14 @@ var Graphics = function(){
 				this.uniforms.c_size.value = this.currState.c_size - 0.4 * env[1].z;
 				this.uniforms.c_amp.value = this.currState.c_amp + 0.25 * env[1].z;
 				this.uniforms.c_freq.value = this.currState.c_freq + env[1].z * 10.0;
-				this.uniforms.o_freq.value = this.currState.o_freq + env[1].z * 12.0;
+				this.uniforms.r_freq.value = this.currState.r_freq + env[1].z * 12.0;
 			}
 			else if(currentGesture == 2)
 			{
 				//do something else
 				this.uniforms.c_size.value = this.currState.c_size + 0.2 * env[1].z;
 				this.uniforms.o_amp.value = this.currState.o_amp + 0.75 * env[1].z;
-				this.uniforms.o_freq.value = this.currState.o_freq + env[1].z * 20.0;
+				this.uniforms.r_freq.value = this.currState.r_freq + env[1].z * 20.0;
 				this.uniforms.c_freq.value = this.currState.c_freq + env[1].z * 10.0;
 
 			}
@@ -166,6 +173,7 @@ var Graphics = function(){
 		var delta = ellapsedTime - this.uniforms.time.value;
 		this.uniforms.c_time.value += delta * this.uniforms.c_freq.value;
 		this.uniforms.o_time.value += delta * this.uniforms.o_freq.value;
+		this.uniforms.r_time.value += delta * this.uniforms.r_freq.value;
 
 		this.uniforms.time.value = ellapsedTime;
 		this.uniforms.mouse.value.copy(mousePos);

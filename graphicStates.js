@@ -6,35 +6,54 @@ var States =
 	{
 	 cell_detail: 4.0,
 	 cell_detune: 0.25,
-	 c_size: 0.8,
-	 c_scale: 0.5,
+
 	 cell_detail: 4.0,
-	 o_amp: 0.15,
-	 o_step: 0.0,
-	 c_amp: 0.15,
-	 move_mul: 0.0,
-	 move_add: 0.0,
-	 move_freq: 0.1,
-	 move_distort: new THREE.Vector2(0.1,0.1),
 	 slices: 1.0,
 	 segments: 1.0,
 	 theta_warp: 1.0,
+
+	 c_size: 0.8,
+	 c_amp: 0.15,
+	 c_scale: 0.5,
+	 c_fade: 0.52,
+
+	 o_amp: 0.15,
+	 o_step: 0.0,
+
+	 edge_amp: 0.0,
+	 edge_freq: 0.1,
+	 o_distort: new THREE.Vector2(1.0,1.0),
+
 	 fg_color: col1,
 	 bg_color: black,
 	 hl_color: col2,
+
 	 fg_pow: 3,
 	 hl_pow: 0.4,
 	 hl_mul: 2.5,
-	 c_fade: 0.52
+
 	},
 
 	//1
 	{
-	 c_size: 0.7,
-	 cell_detune: 0.5,
-	 hl_pow: 0.15,
-	 hl_mul: 2.0,
-	 c_fade: 0.2
+		fg_pow: 2.5,
+		hl_pow: 0.3,
+		hl_mul: 2.5,
+		slices: 1.6,
+		c_size: 0.6,
+		c_scale: 0.6,
+		c_fade: 1.,
+		cell_detail: 0.7,
+		theta_warp: 1.0,
+		edge_freq: 0,
+		edge_amp: 0,
+		c_amp: 0.2,
+		o_amp: 0,
+		r_amp: 0.2,
+		c_freq: 0.4,
+		o_freq: 0.1,
+		r_freq: 0.4,
+		cell_detune: 0.5
  	},
 
 	//2

@@ -30,7 +30,7 @@ var files = [
 var SoundStates =
 [
   {
-    file: {value: "20472_woodpigeonnr_01.wav"},
+    file: {value: "20472_woodpigeonnr_02.wav"},
     amp: {value: 0.0, min: 0.0, max: 1.0, map: 1},
     speed: {value: 0.0 },
     pitch: {value: 1.0, min: 300.0, max: 800, map: "rand" },
@@ -38,19 +38,19 @@ var SoundStates =
     timeRandomization:{value: 0.0 },
     grainDuration:{value: 0.04 },
     grainSpacing:{value: 0.05 , min:0.04, max:0.16, map: "none"  },
-    regionStart: {value: 0.0 , min:1.0, max: 0.6 , map: 3 },
+    regionStart: {value: 0.0 , min:1.0, max: 0.0 , map: 3 },
     regionLength: {value: 0.0 }
   },
   {
-    file: {value: "20472_woodpigeonnr_01.wav"},
+    file: {value: "20472_woodpigeonnr_01b.wav"},
     amp: {value: 0.0, min: 0.0, max: 1.0, map: 1},
     speed: {value: 0.0 },
     pitch: {value: 1.0, min: 300.0, max: 800, map: "rand" },
     pitchRandomization: {value: 0.0 },
     timeRandomization:{value: 0.0 },
     grainDuration:{value: 0.04 },
-    grainSpacing:{value: 0.05 , min:0.04, max:0.16, map: "none"  },
-    regionStart: {value: 0.0 , min:0.36, max: 0.1 , map: 3 },
+    grainSpacing:{value: 0.05 , min:0.04, max:0.16, map:3  },
+    regionStart: {value: 0.0 , min:0.9, max: 0.0 , map: 3 },
     regionLength: {value: 0.0 }
   }
 
@@ -78,6 +78,7 @@ var Sound = function(){
   this.isUnlocked = false;
 
   this.state = 0;
+  this.seed = Math.random();
 
 
   this.parameters =
@@ -341,7 +342,7 @@ var Sound = function(){
         if(this.parameters[property].map == "rand")
         {
           this.parameters[property].value = linlin(
-            Math.random(), 0, 1,
+            this.seed, 0, 1,
             this.parameters[property].min,
             this.parameters[property].max
           );
