@@ -9,14 +9,15 @@ $('document').ready(function(){
   graphics = new Graphics();
   graphics.init();
   sound = new Sound();
+  sound.init();
   var mousePos = new THREE.Vector2(0,0);
 
   reactionMap = [
     undefined,
-    {graphics: "shudderThetaUp", sound: 0 },
-    {graphics: "shudderThetaDown", sound: 1 },
-    {graphics: "shudderOut", sound: 2 },
-    {graphics: "shudderIn", sound: 3 }
+    {graphics: "shudderThetaUp", sound: "pigeonUp" },
+    {graphics: "shudderThetaDown", sound: "pigeonDown" },
+    {graphics: "shudderOut", sound: "babyUp" },
+    {graphics: "shudderIn", sound: "babyDown" }
   ];
 
   touchStartPos = new THREE.Vector2();
@@ -29,7 +30,7 @@ $('document').ready(function(){
   isMouseDown = false;
 
   stateEnvelope = new Envelope(10, 60);
-  changingState = false;
+  changingState = false; //false will pause the process 
   stateIndex = 0;
 
   graphics.initState();
@@ -249,7 +250,6 @@ function updateGesture(ng)
     if(accumulator > 1.0/60)
     {
 
-
       if(newTouch)
       {
         newTouch = false;
@@ -260,12 +260,12 @@ function updateGesture(ng)
         setEnvTargets(0);
       }
 
-
       for(var i = 0; i < env.length; i++)
       {
         env[i].step();
       }
 
+      //check if any of the envelopes are active
       envsActive = false;
 
       for(var i = 0; i < env.length; i++)
@@ -279,16 +279,16 @@ function updateGesture(ng)
 
       if(!envsActive)
       {
-        currentGesture = 0;
+        gestureEnd(); // just incase it was missed
       }
       else if(isGesture)
       {
-        updateState();
+        updateState(); //only updateState if a gesture is happening
       }
 
       // ultimately we don't need mousePos
       graphics.draw(ellapsedTime, mousePos, envsActive);
-      sound.update(ellapsedTime, mousePos);
+      sound.update(ellapsedTime, mousePos, envsActive);
     }
 
   	requestAnimationFrame( render );

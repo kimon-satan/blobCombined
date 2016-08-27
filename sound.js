@@ -2,135 +2,17 @@
 
 //NB this will need to be split in AC and synth classes if there are multiple sound streams
 
-var files = [
-'138344_reverse_crow.wav',
-'169830_dino009.wav',
-'19997_blackbird.wav',
-'19997_blackbird_flap.wav',
-'20472_woodpigeonnr_01.wav', //4
-'20472_woodpigeonnr_02.wav',
-'20472_woodpigeonnr_03.wav',
-'235443_sandhill-crane.wav',
-'240476_wings_.wav',
-'262307__steffcaffrey__cat-happy-purr-twitter2.wav',
-'262308__steffcaffrey__cat-happy-purr-twit3.wav',
-'262310__steffcaffrey__cat-purr-twit5.wav',
-'262311__steffcaffrey__cat-purr-twit6.wav',
-'278903__syntheway__guardians-of-limbo-syntheway-magnus-choir-vsti.wav',
-'319512_pigeon_low.wav',
-'319512_pigeon_select.wav',
-'57271_cat-bird.wav',
-'66637_crying-baby-2.wav',
-'66637_crying-baby-2b.wav',
-'66637_crying-baby-3.wav',
-'66637_crying-baby-4.wav',
-'66637_crying-baby-select.wav',
-];
 
-var SoundReactions =
-[
-  {
-    file: {value: "20472_woodpigeonnr_02.wav"},
-    amp: {value: 0.0, min: 0.0, max: 1.0, map: 1},
-    speed: {value: 0.0 },
-    pitch: {value: 1.0, min: 300.0, max: 800, map: "rand" },
-    pitchRandomization: {value: 0.0 },
-    timeRandomization:{value: 0.0 },
-    grainDuration:{value: 0.04 },
-    grainSpacing:{value: 0.05 , min:0.04, max:0.16, map: "none"  },
-    regionStart: {value: 0.0 , min:1.0, max: 0.0 , map: 3 },
-    regionLength: {value: 0.0 }
-  },
-  {
-    file: {value: "20472_woodpigeonnr_01b.wav"},
-    amp: {value: 0.0, min: 0.0, max: 1.0, map: 1},
-    speed: {value: 0.0 },
-    pitch: {value: 1.0, min: 300.0, max: 800, map: "rand" },
-    pitchRandomization: {value: 0.0 },
-    timeRandomization:{value: 0.0 },
-    grainDuration:{value: 0.04 },
-    grainSpacing:{value: 0.05 , min:0.04, max:0.16, map:3  },
-    regionStart: {value: 0.0 , min:0.9, max: 0.0 , map: 3 },
-    regionLength: {value: 0.0 }
-  },
-  {
-    file: {value: "66637_crying-baby-2b.wav"},
-    amp: {value: 0.0, min: 0.0, max: 1.0, map: 1},
-    speed: {value: 0.0 },
-    pitch: {value: 1.0, min: 300.0, max: 800, map: "rand" },
-    pitchRandomization: {value: 0.0 },
-    timeRandomization:{value: 0.0 },
-    grainDuration:{value: 0.1 },
-    grainSpacing:{value: 0.05 , min:0.04, max:0.15, map:3  },
-    regionStart: {value: 0.0 , min:0.0, max: 1.0 , map: 3 },
-    regionLength: {value: 0.0 }
-  },
-  {
-    file: {value: "66637_crying-baby-2b.wav"},
-    amp: {value: 0.0, min: 0.0, max: 1.0, map: 1},
-    speed: {value: 0.0 },
-    pitch: {value: 1.0, min: 300.0, max: 800, map: "rand" },
-    pitchRandomization: {value: 0.0 },
-    timeRandomization:{value: 0.0 },
-    grainDuration:{value: 0.1, min: 0.01, max: 0.1, map: 3 },
-    grainSpacing:{value: 0.05 , min:0.08, max:0.01, map:3  },
-    regionStart: {value: 0.0 , min:1.0, max: 0.0 , map: 3 },
-    regionLength: {value: 0.0 }
-  }
+$.getScript("soundDefs.js",function(){
 
-
-]
-
-var Sound = function(){
-
-//GLOBALS
-
-  this.audioContext;
-  this.compressor;
-  this.buffer = 0;
-  this.bufferDuration = 0.0;
-
-  this.buffers = {};
-
-  this.realTime = 0.0;
-  this.grainTime = 0.0;
-
-  this.isSourceLoaded = false;
-  this.applyGrainWindow = false;
-  this.grainWindow;
-
-  //IOS hack
-  this.isUnlocked = false;
-
-  this.reaction = 0;
-  this.seed = Math.random();
-
-
-  this.parameters =
-  {
-    file: {value: files[0]},
-    amp: {value: 0.0, min: 0.0, max: 1.0},
-    speed: {value: 0.0, min: -4.0, max: 4.0  },
-    pitch: {value: 1.0, min: 1.0, max: 3600  },
-    pitchRandomization: {value: 0.0, min: 0.0, max: 1200.0  },
-    timeRandomization:{value: 0.01 , min:0.0, max:1.0 },
-    grainSize:{value: 0.09 , min:0.010, max:0.5 },
-    grainDuration:{value: 0.09 , min:0.010, max:0.5 },
-    grainSpacing:{value: 0.045 , min:0.010, max:0.5 },
-    regionStart: {value: 0.01 , min:0.0, max:1.0 },
-    regionLength: {value: 0.01 , min:0.0, max:10.0  }
-  }
-
-
-///////////////////////////////////SOUND SETUP////////////////////////////
-
-  this.init = function(){
-
+  Sound.prototype.init = function(){
 
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
     this.audioContext = new AudioContext();
 
     this.realTime = Math.max(0, this.audioContext.currentTime);
+
+    this.seed = Math.random();
 
     if (this.audioContext.decodeAudioData)
     {
@@ -161,25 +43,22 @@ var Sound = function(){
     }
 
     //for each reaction load the sound file
-    var count = 0;
-    for(var s in SoundReactions)
+    for(var s in this.reactions)
     {
-      this.loadSample("samples/" + SoundReactions[s].file.value, count == 0);
-      count ++;
+      this.loadSample("samples/" + this.reactions[s].file.value);
     }
 
 
   }
 
-  this.update = function(ellapsedTime, mousePos)
+  Sound.prototype.update = function(ellapsedTime, mousePos, envsActive)
   {
       if(!this.audioContext)return; //not initialised yet
+      if(this.reaction == undefined)return; //no sound reaction
 
       var currentTime = this.audioContext.currentTime;
 
       //mapping to envelopes this will need sorting
-
-
 
       if(envsActive)
       {
@@ -212,7 +91,7 @@ var Sound = function(){
       }
   }
 
-  this.loadSample = function(url, setReaction) {
+  Sound.prototype.loadSample = function(url) {
 
     //TODO fix audio loading bug
 
@@ -240,11 +119,6 @@ var Sound = function(){
           ptr.buffers[fileId].duration = b.duration - 0.050;
           ptr.buffers[fileId].isSourceLoaded = true;
 
-          if(setReaction)
-          {
-            ptr.setReaction(0); // bit hacky but safe
-          }
-
         },
 
         function(b) {
@@ -260,7 +134,7 @@ var Sound = function(){
     request.send();
   }
 
-  this.nextGrain = function()
+  Sound.prototype.nextGrain = function()
   {
     //plays an individual grain
 
@@ -355,24 +229,29 @@ var Sound = function(){
 
   }
 
-  this.setReaction  = function(reactionId)
+  Sound.prototype.setReaction  = function(idx)
   {
 
-    //TODO make the same as graphics
-
-    if(reactionId == undefined)return;
-
-    if(SoundReactions[reactionId] == undefined)
+    if(idx == undefined)
     {
-      console.log("reaction: " + reactionId + " not found")
+      return;
+      this.reaction = undefined;
+    }
+
+    if(this.reactions[idx] == undefined)
+    {
+      console.log("reaction: " + idx + " not found");
+      this.reaction = undefined;
       return;
     }
 
-    for(property in SoundReactions[reactionId])
+    sound.reaction = idx;
+
+    for(property in this.reactions[idx])
     {
-        for(p in SoundReactions[reactionId][property])
+        for(p in this.reactions[idx][property])
         {
-          this.parameters[property][p] = SoundReactions[reactionId][property][p];
+          this.parameters[property][p] = this.reactions[idx][property][p];
         }
 
         if(this.parameters[property].map == "rand")
@@ -390,12 +269,11 @@ var Sound = function(){
     this.bufferDuration = bobj.duration;
     this.isSourceLoaded = bobj.isSourceLoaded;
 
-
   }
 
   //IOS workaround
 
-  this.unlock = function()
+  Sound.prototype.unlock = function()
   {
 
     console.log("unlocking")
@@ -420,7 +298,7 @@ var Sound = function(){
 
   }
 
-  this.getFileId = function(url)
+  Sound.prototype.getFileId = function(url)
   {
     var fileId = url.substring(url.lastIndexOf('/') + 1);
     fileId = fileId.substring(0, fileId.lastIndexOf('.'));
@@ -428,8 +306,4 @@ var Sound = function(){
     return fileId
   }
 
-
-  this.init();
-
-
-}
+});

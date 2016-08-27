@@ -1,5 +1,4 @@
-console.log("loading graphics definitions")
-//ideally this won't be global
+
 var Graphics = function(){
 
 	this.scene;
