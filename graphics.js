@@ -38,7 +38,12 @@ var col2 = new THREE.Vector3(.59,0,0);
 // 	return c;
 // }
 
-$.getScript("graphicsDefs.js",function(){
+$.getScript("shaders.js", function(){
+		$.getScript("graphicsDefs.js", makeGraphics);
+})
+
+
+function makeGraphics(){
 
 	Graphics.prototype.init = function()
 	{
@@ -78,13 +83,13 @@ $.getScript("graphicsDefs.js",function(){
 		this.changeState();
 	}
 
-	Graphics.prototype.draw = function(ellapsedTime , mousePos, envsActive){
+	Graphics.prototype.draw = function(ellapsedTime , mousePos, envsActive, envs){
 
 		this.updateUniforms(); //reset the uniforms after any reaction jiggery
 
 		if(envsActive && this.react != undefined)
 		{
-				this.react();
+				this.react(envs);
 		}
 		//update the various time uniforms last
 		var delta = ellapsedTime - this.uniforms.time.value;
@@ -196,7 +201,7 @@ $.getScript("graphicsDefs.js",function(){
 
 	}
 
-	Graphics.prototype.updateState = function()
+	Graphics.prototype.updateState = function(stateEnvelope)
 	{
 
 		//increment the current state
@@ -233,4 +238,4 @@ $.getScript("graphicsDefs.js",function(){
 		}
 	}
 
-});
+}

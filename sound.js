@@ -51,7 +51,7 @@ $.getScript("soundDefs.js",function(){
 
   }
 
-  Sound.prototype.update = function(ellapsedTime, mousePos, envsActive)
+  Sound.prototype.update = function(ellapsedTime, mousePos, envsActive, env)
   {
       if(!this.audioContext)return; //not initialised yet
       if(this.reaction == undefined)return; //no sound reaction
@@ -245,7 +245,7 @@ $.getScript("soundDefs.js",function(){
       return;
     }
 
-    sound.reaction = idx;
+    this.reaction = idx;
 
     for(property in this.reactions[idx])
     {

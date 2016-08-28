@@ -1,341 +1,376 @@
-var graphics, sound, startTime, ellapsedTime, accumulator, canvas;
-var envsActive, touchStartPos, numTouches, newTouch , isGesture, isMouseDown;
-var env, stateEnvelope, stateIndex, changingState; //handling progression
-var currentGesture, reactionMap;
+
+$.getScript("utils.js", function(){});
+$.getScript("graphics.js", function(){});
+$.getScript("sound.js", function(){});
+
+setup();
+
+function setup()
+{
+  if(window.Graphics != undefined && window.Sound != undefined)
+  {
+    var iface = new Interface();
+    iface.init();
+  }
+  else
+  {
+    window.setTimeout(setup, 10);
+  }
+}
+
+function Interface(){
+
+  this.graphics
+  this.sound
+  this.startTime
+  this.ellapsedTime
+  this.accumulator
+  this.canvas
+
+  this.mousePos
+  this.touchStartPos
+  this.numTouches
+
+  this.isNewTouch
+  this.isGesture
+  this.currentGesture
+  this.isMouseDown
 
 
-$('document').ready(function(){
+  this.envsActive
+  this.reactEnvelopes
+  this.reactionMap
 
-  graphics = new Graphics();
-  graphics.init();
-  sound = new Sound();
-  sound.init();
-  var mousePos = new THREE.Vector2(0,0);
+  this.stateEnvelope
+  this.stateIndex
+  this.isChangingState
 
-  reactionMap = [
-    undefined,
-    {graphics: "shudderThetaUp", sound: "pigeonUp" },
-    {graphics: "shudderThetaDown", sound: "pigeonDown" },
-    {graphics: "shudderOut", sound: "babyUp" },
-    {graphics: "shudderIn", sound: "babyDown" }
-  ];
+  this.init = function()
+  {
+    this.graphics = new Graphics();
+    this.graphics.init();
+    this.sound = new Sound();
+    this.sound.init();
 
-  touchStartPos = new THREE.Vector2();
+    this.mousePos = new THREE.Vector2();
+    this.touchStartPos = new THREE.Vector2();
 
-  startTime = new Date().getTime();
-  ellapsedTime = 0;
-  accumulator = 0;
-  isGesture = false;
-  newTouch = false;
-  isMouseDown = false;
+    this.startTime = new Date().getTime();
+    this.ellapsedTime = 0;
+    this.accumulator = 0;
 
-  stateEnvelope = new Envelope(10, 60);
-  changingState = false; //false will pause the process 
-  stateIndex = 0;
+    this.isGesture = false;
+    this.isNewTouch = false;
+    this.isMouseDown = false;
 
-  graphics.initState();
-  changeState();
-
-  env = [
-    new Envelope2(0.1,0.01,60),
-    new Envelope2(1.0,0.2,60),
-    new Envelope2(2.0,0.2,60),
-    new Envelope(2.0, 60) //latched by default
-  ];
+    this.stateEnvelope = new Envelope(10, 60);
+    this.stateIndex = 0;
+    this.isChangingState = false; //false will pause the process
 
 
-  canvas = graphics.canvas; //we need the canvas for the eventListeners
 
-  canvas.addEventListener('touchstart', function(e) {
+    this.reactEnvelopes = [
+      new Envelope2(0.1,0.01,60),
+      new Envelope2(1.0,0.2,60),
+      new Envelope2(2.0,0.2,60),
+      new Envelope(2.0, 60) //latched by default
+    ];
 
-      mousePos.set(
+
+    this.reactionMap = [
+      undefined,
+      {graphics: "shudderThetaUp", sound: "pigeonUp" },
+      {graphics: "shudderThetaDown", sound: "pigeonDown" },
+      {graphics: "shudderOut", sound: "babyUp" },
+      {graphics: "shudderIn", sound: "babyDown" }
+    ];
+
+    this.graphics.initState();
+    this.changeState();
+
+
+    ///////////////////////SETUP EVENTS////////////////////////////////////////
+
+    this.canvas = this.graphics.canvas; //we need the canvas for the eventListeners
+
+    this.canvas.addEventListener('touchstart', function(e)
+    {
+
+      this.mousePos.set(
         e.touches[0].clientX /canvas.width,
         e.touches[0].clientY / canvas.height
       );
 
-
-      if(!sound.isUnlocked)
+      if(!this.sound.isUnlocked)
       {
-        sound.unlock();
+        this.sound.unlock();
       }
 
-      gestureStart();
+      this.gestureStart();
+    }.bind(this)
+    , false);
 
-
-    }, false);
-
-    canvas.addEventListener('touchmove', function(e){
-
-
+    this.canvas.addEventListener('touchmove', function(e)
+    {
       var p = new THREE.Vector2(
         e.touches[0].clientX /canvas.width,
         e.touches[0].clientY / canvas.height
       );
+      this.gestureMove(p);
+    }.bind(this)
+    , false);
 
-      gestureMove(p);
-
-    }, false);
-
-    canvas.addEventListener('touchend', function(e) {
-
-      gestureEnd();
-    }, false);
+    this.canvas.addEventListener('touchend', function(e)
+    {
+      this.gestureEnd();
+    }.bind(this)
+    , false);
 
 
-    canvas.addEventListener('mousedown', function(e) {
-
-      mousePos.set(
-        e.clientX/canvas.width,
-        e.clientY/canvas.height
+    this.canvas.addEventListener('mousedown', function(e)
+    {
+      this.mousePos.set(
+        e.clientX/this.canvas.width,
+        e.clientY/this.canvas.height
       );
 
-      if(!sound.isUnlocked){
-        sound.isUnlocked = true;
-      }
-
-      gestureStart();
-
-      isMouseDown = true;
-
-
-    }, false);
-
-
-
-  canvas.addEventListener("mousemove", function (e) {
-
-        var pos = new THREE.Vector2(
-          e.clientX/canvas.width,
-          e.clientY/canvas.height
-        );
-
-        if(isMouseDown)
-        {
-          gestureMove(pos);
-        }
-
-   }, false);
-
-   canvas.addEventListener('mouseup', function() {
-
-     isMouseDown = false;
-     gestureEnd();
-
-   }, false);
-
-
-////////////////////////////////////////////////////////
-
-function gestureStart()
-{
-  isGesture = false;
-  currentGesture = 0;
-
-  touchStartPos.copy(mousePos);
-
-  //hard restart
-  //... might be good to have only some envelopes working this way
-  for(var i = 0; i < env.length; i++)
-  {
-    env[i].targetVal = 0.0;
-    env[i].z = 0.0;
-  }
-
-  numTouches = 0;
-}
-
-function gestureMove(pos)
-{
-  numTouches++;
-  newTouch = true;
-
-  if(numTouches > 5){
-
-    var v1 = new THREE.Vector2().subVectors(pos ,mousePos);
-    mousePos.copy(pos);
-
-    var v2 = new THREE.Vector2().subVectors(mousePos, touchStartPos);
-    var a = v2.angle();
-
-    if(v1.length() < 0.002)
-    {
-        gestureEnd();
-    }
-    else if(Math.abs(a - Math.PI/2) < 0.2 && v1.y > 0)
-    {
-        updateGesture(1);
-    }
-    else if (Math.abs(a - Math.PI * 1.5) < 0.2 && v1.y < 0)
-    {
-        updateGesture(2);
-    }
-    else if(Math.abs(a - Math.PI) < 0.2 && v1.x < 0)
-    {
-        updateGesture(3);
-    }
-    else if(Math.min(a, Math.abs(a - Math.PI * 2.)) < 0.2 && v1.x > 0)
-    {
-        updateGesture(4);
-    }
-    else
-    {
-      gestureEnd();
-    }
-
-  }
-
-}
-
-function gestureEnd()
-{
-  setEnvTargets(0.)
-  isGesture = false;
-}
-
-function updateGesture(ng)
-{
-  isGesture = false;
-
-  if(currentGesture == 0 )
-  {
-    isGesture = true;
-    currentGesture = ng;
-    if(reactionMap[currentGesture] != undefined)
-    {
-      sound.setReaction(reactionMap[currentGesture].sound);
-      graphics.setReaction(reactionMap[currentGesture].graphics);
-    }
-    else
-    {
-      sound.setReaction();
-      graphics.setReaction();
-    }
-  }
-
-  if(currentGesture == ng)
-  {
-    isGesture = true;
-    setEnvTargets(1.);
-  }
-  else
-  {
-      isGesture = false;
-  }
-}
-
-
-
-
-
-/////////////////////////////////////////////////////////
-
-
-  function setEnvTargets(target)
-  {
-    for(var i = 0; i < env.length; i++)
-    {
-      env[i].targetVal = target;
-    }
-  }
-
-
-  function render() {
-
-    var n_et = (new Date().getTime() - startTime) * 0.001;
-    accumulator += (n_et - ellapsedTime);
-    ellapsedTime = n_et;
-
-    //console.log(ellapsedTime)
-
-    if(accumulator > 1.0/60)
-    {
-
-      if(newTouch)
+      if(!this.sound.isUnlocked)
       {
-        newTouch = false;
+        this.sound.isUnlocked = true;
+      }
+      this.gestureStart();
+      this.isMouseDown = true;
+    }.bind(this)
+    , false);
+
+    this.canvas.addEventListener("mousemove", function (e)
+    {
+      var pos = new THREE.Vector2(
+        e.clientX/this.canvas.width,
+        e.clientY/this.canvas.height
+      );
+
+      if(this.isMouseDown)
+      {
+        this.gestureMove(pos);
+      }
+    }.bind(this)
+    , false);
+
+    this.canvas.addEventListener('mouseup', function()
+    {
+      this.isMouseDown = false;
+      this.gestureEnd();
+    }.bind(this)
+    , false);
+
+    //start rendering
+    this.render();
+  }
+
+  this.gestureStart = function ()
+  {
+    this.isGesture = false;
+    this.currentGesture = 0;
+
+    this.touchStartPos.copy(this.mousePos);
+
+    //hard restart
+    //... might be good to have only some envelopes working this way
+    for(var i = 0; i < this.reactEnvelopes.length; i++)
+    {
+      this.reactEnvelopes[i].targetVal = 0.0;
+      this.reactEnvelopes[i].z = 0.0;
+    }
+
+    this.numTouches = 0;
+  }
+
+  this.gestureMove = function (pos)
+  {
+    this.numTouches++;
+    this.isNewTouch = true;
+
+    if(this.numTouches > 5){
+
+      var v1 = new THREE.Vector2().subVectors(pos ,this.mousePos);
+      this.mousePos.copy(pos);
+
+      var v2 = new THREE.Vector2().subVectors(this.mousePos, this.touchStartPos);
+      var a = v2.angle();
+
+      if(v1.length() < 0.002)
+      {
+        this.gestureEnd();
+      }
+      else if(Math.abs(a - Math.PI/2) < 0.2 && v1.y > 0)
+      {
+        this.updateGesture(1);
+      }
+      else if (Math.abs(a - Math.PI * 1.5) < 0.2 && v1.y < 0)
+      {
+        this.updateGesture(2);
+      }
+      else if(Math.abs(a - Math.PI) < 0.2 && v1.x < 0)
+      {
+        this.updateGesture(3);
+      }
+      else if(Math.min(a, Math.abs(a - Math.PI * 2.)) < 0.2 && v1.x > 0)
+      {
+        this.updateGesture(4);
       }
       else
       {
-        numTouches = 0;
-        setEnvTargets(0);
+        this.gestureEnd();
       }
 
-      for(var i = 0; i < env.length; i++)
+    }
+
+  }
+
+  this.gestureEnd = function()
+  {
+    this.setEnvTargets(0.)
+    this.isGesture = false;
+  }
+
+  this.updateGesture = function(ng)
+  {
+    this.isGesture = false;
+
+    if(this.currentGesture == 0 )
+    {
+      this.isGesture = true;
+      this.currentGesture = ng;
+      if(this.reactionMap[this.currentGesture] != undefined)
       {
-        env[i].step();
+        this.sound.setReaction(this.reactionMap[this.currentGesture].sound);
+        this.graphics.setReaction(this.reactionMap[this.currentGesture].graphics);
+      }
+      else
+      {
+        this.sound.setReaction();
+        this.graphics.setReaction();
+      }
+    }
+
+    if(this.currentGesture == ng)
+    {
+      this.isGesture = true;
+      this.setEnvTargets(1.);
+    }
+    else
+    {
+      this.isGesture = false;
+    }
+  }
+
+  this.setEnvTargets = function(target)
+  {
+    for(var i = 0; i < this.reactEnvelopes.length; i++)
+    {
+      this.reactEnvelopes[i].targetVal = target;
+    }
+  }
+
+
+  this.render = function() {
+
+    var n_et = (new Date().getTime() - this.startTime) * 0.001;
+    this.accumulator += (n_et - this.ellapsedTime);
+    this.ellapsedTime = n_et;
+
+    //console.log(ellapsedTime)
+
+    if(this.accumulator > 1.0/60)
+    {
+
+      if(this.isNewTouch)
+      {
+        this.isNewTouch = false;
+      }
+      else
+      {
+        this.numTouches = 0;
+        this.setEnvTargets(0);
+      }
+
+      for(var i = 0; i < this.reactEnvelopes.length; i++)
+      {
+        this.reactEnvelopes[i].step();
       }
 
       //check if any of the envelopes are active
-      envsActive = false;
+      this.envsActive = false;
 
-      for(var i = 0; i < env.length; i++)
+      for(var i = 0; i < this.reactEnvelopes.length; i++)
       {
-        if(env[i].z > 0.005)
+        if(this.reactEnvelopes[i].z > 0.005)
         {
-          envsActive = true;
+          this.envsActive = true;
           break;
         }
       }
 
-      if(!envsActive)
+      if(!this.envsActive)
       {
-        gestureEnd(); // just incase it was missed
+        this.gestureEnd(); // just incase it was missed
       }
-      else if(isGesture)
+      else if(this.isGesture)
       {
-        updateState(); //only updateState if a gesture is happening
+        this.updateState(); //only updateState if a gesture is happening
       }
 
       // ultimately we don't need mousePos
-      graphics.draw(ellapsedTime, mousePos, envsActive);
-      sound.update(ellapsedTime, mousePos, envsActive);
+      this.graphics.draw(this.ellapsedTime, this.mousePos, this.envsActive, this.reactEnvelopes);
+      this.sound.update(this.ellapsedTime, this.mousePos, this.envsActive, this.reactEnvelopes);
     }
 
-  	requestAnimationFrame( render );
+    requestAnimationFrame( this.render );
 
-  }
+  }.bind(this);
 
-  render();
-
-});
-
-function updateState()
-{
-
-
-  //TODO make methods for shifting between vectors
-  if(!changingState)return;
-
-  stateEnvelope.step();
-
-  if(stateEnvelope.z < 0.99)
+  this.updateState = function()
   {
-    //call the graphics update
-    var r = undefined;
 
-    if(reactionMap[currentGesture] != undefined)
+
+    //TODO make methods for shifting between vectors
+    if(!this.changingState)return;
+
+    this.stateEnvelope.step();
+
+    if(this.stateEnvelope.z < 0.99)
     {
-      r = reactionMap[currentGesture].graphics;
+      //call the graphics update
+      var r = undefined;
+
+      if(this.reactionMap[this.currentGesture] != undefined)
+      {
+        r = this.reactionMap[this.currentGesture].graphics;
+      }
+
+      this.graphics.updateState(this.stateEnvelope);
+
     }
-
-    graphics.updateState();
-
+    else
+    {
+      this.changingState = false;
+      this.changeState(); // keep moving through states
+    }
   }
-  else
+
+  this.changeState = function()
   {
-      changingState = false;
-      changeState(); // keep moving through states
+    this.stateIndex += 1;
+
+    this.stateEnvelope.z = 0.0;
+    this.stateEnvelope.targetVal = 1.0;
+    this.changingState = true;
+
+    //call the graphics update
+    this.graphics.changeState(this.stateIndex);
   }
-}
 
-function changeState()
-{
-  stateIndex += 1;
 
-  stateEnvelope.z = 0.0;
-  stateEnvelope.targetVal = 1.0;
-  changingState = true;
 
-  //call the graphics update
-  graphics.changeState(stateIndex);
 }

@@ -166,21 +166,21 @@ var Graphics = function(){
 
 	this.reactions = {
 
-			shudderOut: function(){
+			shudderOut: function(env){
 				this.uniforms.c_size.value = this.currState.c_size - 0.4 * env[1].z;
 				this.uniforms.c_amp.value = this.currState.c_amp + 0.25 * env[1].z;
 				this.uniforms.c_freq.value = this.currState.c_freq + env[1].z * 10.0;
 				this.uniforms.r_freq.value = this.currState.r_freq + env[1].z * 12.0;
 			}.bind(this),
 
-			shudderIn: function(){
+			shudderIn: function(env){
 				this.uniforms.c_size.value = this.currState.c_size + 0.2 * env[1].z;
 				this.uniforms.o_amp.value = this.currState.o_amp + 0.75 * env[1].z;
 				this.uniforms.r_freq.value = this.currState.r_freq + env[1].z * 20.0;
 				this.uniforms.c_freq.value = this.currState.c_freq + env[1].z * 10.0;
 			}.bind(this),
 
-			shudderThetaUp: function(){
+			shudderThetaUp: function(env){
 				this.uniforms.c_size.value = this.currState.c_size + 0.2 * env[1].z;
 				this.uniforms.o_amp.value = this.currState.o_amp + 0.5 * env[1].z;
 				this.uniforms.r_freq.value = this.currState.r_freq + env[1].z * 20.0;
@@ -188,7 +188,7 @@ var Graphics = function(){
 				this.uniforms.theta_warp.value = this.currState.theta_warp * (1.0- env[1].z);
 			}.bind(this),
 
-			shudderThetaDown: function(){
+			shudderThetaDown: function(env){
 				this.uniforms.c_size.value = this.currState.c_size + 0.2 * env[1].z;
 				this.uniforms.o_amp.value = this.currState.o_amp + 0.5 * env[1].z;
 				this.uniforms.r_freq.value = this.currState.r_freq + env[1].z * 20.0;
