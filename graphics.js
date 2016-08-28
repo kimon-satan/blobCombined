@@ -66,18 +66,85 @@ function makeGraphics(){
 
 		this.scene = new THREE.Scene();
 
-
 		var geometry = new THREE.PlaneBufferGeometry( 2, 2 );
 
 		var material = new THREE.ShaderMaterial( {
 			uniforms: this.uniforms,
 			vertexShader: blobVertexShader,
-			fragmentShader: blobFragmentShader
+			fragmentShader: blobFragmentShader,
+			transparent: true
 		} );
 
 		var mesh = new THREE.Mesh( geometry, material );
 
+
+		///////////////////////////////////////////////////////
+
+		this.exp_uniforms = {
+			time:       { value: 1.0 },
+			resolution: { value: new THREE.Vector2() },
+			mouse:  	{value: new THREE.Vector2() },
+			env_time:  	{value: 0. },
+
+			scale:      {value: 1.0, gui: true, min: 1.0, max: 10.0},
+			max_size: {value: 40.0, gui: true, min: 1.0, max: 60.0},
+			color_1: {value: col1},
+			color_2: {value: col2}
+
+		};
+
+		this.exp_uniforms.resolution.value.x = this.renderer.domElement.width;
+		this.exp_uniforms.resolution.value.y = this.renderer.domElement.height;
+
+		var exp_material = new THREE.ShaderMaterial( {
+			uniforms: this.exp_uniforms,
+			vertexShader: expVertexShader,
+			fragmentShader: expFragmentShader,
+			transparent: true
+		} );
+
+
+		var PARTICLE_COUNT = 1000;
+		var exp_geo = new THREE.BufferGeometry();
+
+
+		var particleVerts = new Float32Array(PARTICLE_COUNT * 3);
+		var randVals = [new Float32Array(PARTICLE_COUNT * 4), new Float32Array(PARTICLE_COUNT * 4)];
+		var particleColors = new Float32Array(PARTICLE_COUNT );
+
+		for (var i = 0; i < PARTICLE_COUNT; i++)
+		{
+
+			particleVerts[i * 3 + 0] = 0; //x
+			particleVerts[i * 3 + 1] = 0; //y
+			particleVerts[i * 3 + 2] = i/PARTICLE_COUNT; //z
+
+			particleColors[i] = i%2;
+
+			for(var k = 0; k < 2; k++)
+			{
+				for(var j = 0; j < 4; j++)
+				{
+					randVals[k][i * 4 + j ]  = Math.random();
+				}
+			}
+		}
+
+		exp_geo.addAttribute('position', new THREE.BufferAttribute(particleVerts, 3));
+		exp_geo.addAttribute('color_type', new THREE.BufferAttribute(particleColors, 1));
+		exp_geo.addAttribute('rand_vals', new THREE.BufferAttribute(randVals[0], 4));
+		exp_geo.addAttribute('rand_vals_2', new THREE.BufferAttribute(randVals[1], 4));
+
+
+
+
+		var exp_mesh = new THREE.Points( exp_geo ,exp_material);
+
+		this.scene.add(exp_mesh);
 		this.scene.add( mesh );
+
+		this.envStartTime = 0;
+		this.envLengthSeconds = 2.5;
 
 		this.initState(); //set to state zero
 		this.changeState();
@@ -109,6 +176,11 @@ function makeGraphics(){
 		this.uniforms.c_time.value += (delta * this.uniforms.c_freq.value);
 		this.uniforms.o_time.value += (delta * this.uniforms.o_freq.value);
 		this.uniforms.r_time.value += (delta * this.uniforms.r_freq.value);
+
+		this.exp_uniforms.time.value = ellapsedTime;
+		this.exp_uniforms.env_time.value = Math.min(
+			1.0,
+			(ellapsedTime - this.envStartTime)/this.envLengthSeconds);
 
 		this.uniforms.time.value = ellapsedTime;
 		this.uniforms.mouse.value.copy(mousePos);

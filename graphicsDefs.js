@@ -19,7 +19,7 @@ var Graphics = function(){
 		r_time: 		{value: 1.0, locked: true },
 		resolution: { value: new THREE.Vector2() },
 		mouse:  	{value: new THREE.Vector2(0,0) },
-		scale:      {value: 2.5,  min: 1.0, max: 10.0},
+		scale:      {value: 1.0,  min: 1.0, max: 10.0},
 		seed:      {value: 0.01,  min: 0., max: 1., step: 0.01},
 		slices:      {value: 8.0,  min: 1.0, max: 20.0},
 		segments:      {value: 1.0,  min: 1.0, max: 10.0},

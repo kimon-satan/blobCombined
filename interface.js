@@ -131,24 +131,24 @@ function Interface(){
     {
 
       this.mousePos.set(
-        e.touches[0].clientX /canvas.width,
-        e.touches[0].clientY / canvas.height
+        e.touches[0].clientX /this.canvas.width,
+        e.touches[0].clientY / this.canvas.height
       );
 
       if(!this.sound.isUnlocked)
       {
         this.sound.unlock();
       }
-
       this.gestureStart();
+
     }.bind(this)
     , false);
 
     this.canvas.addEventListener('touchmove', function(e)
     {
       var p = new THREE.Vector2(
-        e.touches[0].clientX /canvas.width,
-        e.touches[0].clientY / canvas.height
+        e.touches[0].clientX /this.canvas.width,
+        e.touches[0].clientY / this.canvas.height
       );
       this.gestureMove(p);
     }.bind(this)
@@ -392,7 +392,7 @@ function Interface(){
           this.explodeEnvelope.z = 0.0;
         }
       }
-      
+
       // ultimately we don't need mousePos
       this.graphics.draw(this.ellapsedTime, this.mousePos);
       this.sound.update(this.ellapsedTime, this.mousePos, this.envsActive, this.reactEnvelopes);

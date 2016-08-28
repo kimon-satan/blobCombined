@@ -286,13 +286,18 @@ $.getScript("soundDefs.js",function(){
     source.connect(this.audioContext.destination);
     source.noteOn(0);
 
+
     var host = this;
     // by checking the play reaction after some time, we know if we're really unlocked
-    setTimeout(function() {
-      if((source.playbackReaction === source.PLAYING_STATE || source.playbackReaction === source.FINISHED_STATE))
+
+
+    var f = window.setInterval(function() {
+
+      if(source.playbackState > 0)
       {
         host.isUnlocked = true;
-        console.log("unlocked")
+        console.log("unlocked");
+        window.clearInterval(f);
       }
     }, 10);
 
