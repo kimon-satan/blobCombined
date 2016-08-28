@@ -13,10 +13,10 @@ var Graphics = function(){
 
 
 	this.uniforms = {
-		time:       { value: 1.0 },
-		c_time: 		{value: 1.0 },
-		o_time: 		{value: 1.0 },
-		r_time: 		{value: 1.0 },
+		time:       {value: 1.0, locked: true },
+		c_time: 		{value: 1.0, locked: true },
+		o_time: 		{value: 1.0, locked: true },
+		r_time: 		{value: 1.0, locked: true },
 		resolution: { value: new THREE.Vector2() },
 		mouse:  	{value: new THREE.Vector2(0,0) },
 		scale:      {value: 2.5,  min: 1.0, max: 10.0},
@@ -66,9 +66,13 @@ var Graphics = function(){
 			c_amp: 0.15,
 			c_scale: 0.5,
 			c_fade: 0.52,
+			c_freq: 0.5,
 
 			o_amp: 0.15,
 			o_step: 0.0,
+
+			r_freq: 0.2,
+			r_amp: 0.2,
 
 			edge_amp: 0.0,
 			edge_freq: 0.1,
@@ -98,11 +102,6 @@ var Graphics = function(){
 			edge_freq: 0,
 			edge_amp: 0,
 			c_amp: 0.2,
-			o_amp: 0,
-			r_amp: 0.2,
-			c_freq: 0.4,
-			o_freq: 0.1,
-			r_freq: 0.4,
 			cell_detune: 0.5
 		},
 
@@ -181,10 +180,9 @@ var Graphics = function(){
 			}.bind(this),
 
 			shudderThetaUp: function(env){
-				this.uniforms.c_size.value = this.currState.c_size + 0.2 * env[1].z;
-				this.uniforms.o_amp.value = this.currState.o_amp + 0.5 * env[1].z;
+				//this.uniforms.c_size.value = this.currState.c_size + 0.2 * env[1].z;
 				this.uniforms.r_freq.value = this.currState.r_freq + env[1].z * 20.0;
-				this.uniforms.c_freq.value = this.currState.c_freq + env[1].z * 10.0;
+				this.uniforms.c_freq.value = this.currState.c_freq + env[1].z * 20.0;
 				this.uniforms.theta_warp.value = this.currState.theta_warp * (1.0- env[1].z);
 			}.bind(this),
 

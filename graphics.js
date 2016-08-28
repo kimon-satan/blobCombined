@@ -83,19 +83,32 @@ function makeGraphics(){
 		this.changeState();
 	}
 
-	Graphics.prototype.draw = function(ellapsedTime , mousePos, envsActive, envs){
-
+	Graphics.prototype.updateReactions = function(envsActive, envs)
+	{
 		this.updateUniforms(); //reset the uniforms after any reaction jiggery
 
 		if(envsActive && this.react != undefined)
 		{
 				this.react(envs);
 		}
+	}
+
+	Graphics.prototype.updateExplosion = function(env)
+	{
+
+			this.uniforms.c_freq.value += (10.0 * Math.pow(env.z,4.0));
+
+			//more later
+	}
+
+	Graphics.prototype.draw = function(ellapsedTime , mousePos){
+
 		//update the various time uniforms last
 		var delta = ellapsedTime - this.uniforms.time.value;
-		this.uniforms.c_time.value += delta * this.uniforms.c_freq.value;
-		this.uniforms.o_time.value += delta * this.uniforms.o_freq.value;
-		this.uniforms.r_time.value += delta * this.uniforms.r_freq.value;
+
+		this.uniforms.c_time.value += (delta * this.uniforms.c_freq.value);
+		this.uniforms.o_time.value += (delta * this.uniforms.o_freq.value);
+		this.uniforms.r_time.value += (delta * this.uniforms.r_freq.value);
 
 		this.uniforms.time.value = ellapsedTime;
 		this.uniforms.mouse.value.copy(mousePos);
@@ -155,7 +168,11 @@ function makeGraphics(){
 
 		for(property in this.uniforms)
 		{
-			if(typeof(this.uniforms[property].value) == "number")
+			if(this.uniforms[property].locked)
+			{
+				//skip it
+			}
+			else if(typeof(this.uniforms[property].value) == "number")
 			{
 				this.uniforms[property].value = this.currState[property];
 			}

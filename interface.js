@@ -104,6 +104,9 @@ function Interface(){
     this.stateIndex = 0;
     this.isChangingState = false; //false will pause the process
 
+    this.explodeEnvelope = new Envelope(10, 60);
+    this.explodeEnvelope.targetVal = 1.0;
+    this.isExplodeOn = true;
 
 
     this.reactEnvelopes = [
@@ -378,8 +381,20 @@ function Interface(){
         this.updateState(); //only updateState if a gesture is happening
       }
 
+
+      this.graphics.updateReactions(this.envsActive, this.reactEnvelopes);
+      if(this.isExplodeOn)
+      {
+        this.graphics.updateExplosion(this.explodeEnvelope);
+        if(this.explodeEnvelope.z > 0.99)
+        {
+          console.log("bang");
+          this.explodeEnvelope.z = 0.0;
+        }
+      }
+      
       // ultimately we don't need mousePos
-      this.graphics.draw(this.ellapsedTime, this.mousePos, this.envsActive, this.reactEnvelopes);
+      this.graphics.draw(this.ellapsedTime, this.mousePos);
       this.sound.update(this.ellapsedTime, this.mousePos, this.envsActive, this.reactEnvelopes);
     }
 
@@ -390,30 +405,24 @@ function Interface(){
   this.updateState = function()
   {
 
+    if(this.isExplodeOn)this.explodeEnvelope.step();
 
-    //TODO make methods for shifting between vectors
-    if(!this.changingState)return;
+    if(this.changingState){
 
-    this.stateEnvelope.step();
+      this.stateEnvelope.step();
 
-    if(this.stateEnvelope.z < 0.99)
-    {
-      //call the graphics update
-      var r = undefined;
-
-      if(this.currentReactionMap.map[this.currentGesture] != undefined)
+      if(this.stateEnvelope.z < 0.99)
       {
-        r = this.currentReactionMap.map[this.currentGesture].graphics;
+        this.graphics.updateState(this.stateEnvelope);
+      }
+      else
+      {
+        this.changingState = false;
+        this.changeState(); // keep moving through states
       }
 
-      this.graphics.updateState(this.stateEnvelope);
+    }
 
-    }
-    else
-    {
-      this.changingState = false;
-      this.changeState(); // keep moving through states
-    }
   }
 
   this.changeState = function()
