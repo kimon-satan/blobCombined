@@ -1,3 +1,4 @@
+var iface;
 
 $.getScript("utils.js", function(){});
 $.getScript("graphics.js", function(){});
@@ -9,7 +10,7 @@ function setup()
 {
   if(window.Graphics != undefined && window.Sound != undefined)
   {
-    var iface = new Interface();
+    iface = new Interface();
     iface.init();
   }
   else
@@ -39,14 +40,50 @@ function Interface(){
 
   this.envsActive
   this.reactEnvelopes
-  this.reactionMap
+  this.currentReactionMap
+
 
   this.stateEnvelope
   this.stateIndex
   this.isChangingState
 
+  this.reactionMaps =
+  {
+    0:[  { z: 0.,
+        map: [
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined]
+      }
+    ],
+    1:[
+        { z: 1.,
+          map: [
+          undefined,
+          {graphics: "shudderThetaUp", sound: "pigeonUp" },
+          undefined,
+          undefined,
+          undefined]
+        },
+        { z: 1.5,
+          map: [
+          undefined,
+          {graphics: "shudderThetaUp", sound: "pigeonUp" },
+          {graphics: "shudderThetaDown", sound: "pigeonDown" },
+          undefined,
+          undefined]
+        }
+      ],
+    2: [],
+    3: [],
+    4: []
+  }
+
   this.init = function()
   {
+
     this.graphics = new Graphics();
     this.graphics.init();
     this.sound = new Sound();
@@ -77,13 +114,7 @@ function Interface(){
     ];
 
 
-    this.reactionMap = [
-      undefined,
-      {graphics: "shudderThetaUp", sound: "pigeonUp" },
-      {graphics: "shudderThetaDown", sound: "pigeonDown" },
-      {graphics: "shudderOut", sound: "babyUp" },
-      {graphics: "shudderIn", sound: "babyDown" }
-    ];
+    this.currentReactionMap = this.reactionMaps[0][0];
 
     this.graphics.initState();
     this.changeState();
@@ -242,10 +273,14 @@ function Interface(){
     {
       this.isGesture = true;
       this.currentGesture = ng;
-      if(this.reactionMap[this.currentGesture] != undefined)
+
+      //console.log(this.currentGesture, this.currentReactionMap.map[this.currentGesture]);
+
+      if(this.currentReactionMap.map[this.currentGesture] != undefined)
       {
-        this.sound.setReaction(this.reactionMap[this.currentGesture].sound);
-        this.graphics.setReaction(this.reactionMap[this.currentGesture].graphics);
+
+        this.sound.setReaction(this.currentReactionMap.map[this.currentGesture].sound);
+        this.graphics.setReaction(this.currentReactionMap.map[this.currentGesture].graphics);
       }
       else
       {
@@ -315,6 +350,28 @@ function Interface(){
       if(!this.envsActive)
       {
         this.gestureEnd(); // just incase it was missed
+
+        //check for latest reactionMap
+
+        var cz = 0;
+
+        if(this.reactionMaps[this.stateIndex] != undefined)
+        {
+          for(i in this.reactionMaps[this.stateIndex])
+          {
+            var rm = this.reactionMaps[this.stateIndex][i];
+            var z = rm.z%1;
+            if(z >= cz &&
+               rm.z >= this.currentReactionMap.z
+               && this.stateEnvelope.z >= z)
+            {
+              cz = z;
+              this.currentReactionMap = rm;
+            }
+          }
+        }
+
+
       }
       else if(this.isGesture)
       {
@@ -344,9 +401,9 @@ function Interface(){
       //call the graphics update
       var r = undefined;
 
-      if(this.reactionMap[this.currentGesture] != undefined)
+      if(this.currentReactionMap.map[this.currentGesture] != undefined)
       {
-        r = this.reactionMap[this.currentGesture].graphics;
+        r = this.currentReactionMap.map[this.currentGesture].graphics;
       }
 
       this.graphics.updateState(this.stateEnvelope);
@@ -362,6 +419,8 @@ function Interface(){
   this.changeState = function()
   {
     this.stateIndex += 1;
+
+    //modify the reactionMap here ?
 
     this.stateEnvelope.z = 0.0;
     this.stateEnvelope.targetVal = 1.0;

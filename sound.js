@@ -234,8 +234,8 @@ $.getScript("soundDefs.js",function(){
 
     if(idx == undefined)
     {
-      return;
       this.reaction = undefined;
+      return;
     }
 
     if(this.reactions[idx] == undefined)
