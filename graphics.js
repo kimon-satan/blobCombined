@@ -72,7 +72,9 @@ function makeGraphics(){
 			uniforms: this.uniforms,
 			vertexShader: blobVertexShader,
 			fragmentShader: blobFragmentShader,
-			transparent: true
+			transparent: true,
+			depthWrite: false
+
 		} );
 
 		var mesh = new THREE.Mesh( geometry, material );
@@ -100,11 +102,12 @@ function makeGraphics(){
 			uniforms: this.exp_uniforms,
 			vertexShader: expVertexShader,
 			fragmentShader: expFragmentShader,
-			transparent: true
+			depthWrite: false
+
 		} );
 
 
-		var PARTICLE_COUNT = 1000;
+		var PARTICLE_COUNT = 2000;
 		var exp_geo = new THREE.BufferGeometry();
 
 
@@ -181,6 +184,8 @@ function makeGraphics(){
 		this.exp_uniforms.env_time.value = Math.min(
 			1.0,
 			(ellapsedTime - this.envStartTime)/this.envLengthSeconds);
+
+		if(this.exp_uniforms.env_time.value  == 1.0)this.envStartTime = ellapsedTime;
 
 		this.uniforms.time.value = ellapsedTime;
 		this.uniforms.mouse.value.copy(mousePos);

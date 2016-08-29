@@ -1,6 +1,6 @@
 var blobVertexShader = `
   void main()	{
-    gl_Position = vec4( position, 1.0 );
+    gl_Position = vec4( vec3(position.x, position.y, -1.0), 1.0 );
   }
 `;
 
@@ -213,16 +213,15 @@ void main()	{
 
 
   float o_noise = noise(vec3(ustheta2 * o_step + move.x , ustheta2 * o_step + move.y , seed)); //symmetrical noise
-  float c_noise = noise(vec3(cos(theta) + c_time, sin(theta) + c_time, 0.));
   float r_noise = noise(vec3(cos(theta) + r_time, sin(theta) + r_time, 10.));
-
-  //edges
   float o_edge = 0.7 + o_amp * 0.3 * o_noise + r_amp * 0.3 * r_noise;
   o_edge -= sin(ustheta * PI * edge_freq)  * edge_amp;
-  float c_edge = c_size * 0.7 + c_amp * 0.3 * c_size * c_noise;
-
-  //masks with judicious blending for no gaps
   float o_lum =  1.0 - smoothstep(o_edge - 0.1, o_edge , n_rho);
+
+  if(o_lum < 0.01)discard; // not in the shape
+
+  float c_noise = noise(vec3(cos(theta) + c_time, sin(theta) + c_time, 0.));
+  float c_edge = c_size * 0.7 + c_amp * 0.3 * c_size * c_noise;
   float c_lum = 1.0 - smoothstep(c_edge - 0.1, c_edge , n_rho);
 
 
@@ -234,7 +233,8 @@ void main()	{
 
   //NB. currently using same segments for inner and outer .. this might be changed
 
-  gl_FragColor = vec4( vec3(o_col * o_lum * (1.0 - c_lum) + c_lum * c_col),1.0);
+  gl_FragColor = vec4( vec3(o_col * o_lum * (1.0 - c_lum) + c_lum * c_col),o_lum );
+
   }
 `;
 
@@ -348,7 +348,7 @@ var expVertexShader = `
 				float theta = rand_vals.x * TWO_PI;
 				float accel = 0.4 + rand_vals.y * 0.15;
 				float range = rand_vals.z * 0.95 + 0.05;
-				float rho = pow(env_time, accel ) * range;
+				float rho = 0.5 + pow(env_time, accel ) * range;
 
 				float s =  0.1 + rand_vals.w * 0.9;
 
@@ -360,7 +360,7 @@ var expVertexShader = `
 				pos += vec2(-.125) + vec2(rand_vals_2.x, rand_vals_2.y) * vec2(.25);
 				pos *= 1./trans;
 
-				gl_Position = vec4( vec3(pos.x, pos.y, 0.), 1.0 );
+				gl_Position = vec4( vec3(pos.x, pos.y, -0.5), 1.0 );
 
 				particle_size = max_size * s * (1.0 - pow(env_time,  rand_vals_2.z * 0.25 ))/scale;
 
