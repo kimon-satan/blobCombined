@@ -107,20 +107,20 @@ function makeGraphics(){
 		} );
 
 
-		var PARTICLE_COUNT = 2000;
+		this.PARTICLE_COUNT = 2000;
 		this.exp_geo = new THREE.BufferGeometry();
 
 
-		var particleVerts = new Float32Array(PARTICLE_COUNT * 3);
-		var randVals = [new Float32Array(PARTICLE_COUNT * 4), new Float32Array(PARTICLE_COUNT * 4)];
-		var particleColors = new Float32Array(PARTICLE_COUNT );
+		var particleVerts = new Float32Array(this.PARTICLE_COUNT * 3);
+		var randVals = [new Float32Array(this.PARTICLE_COUNT * 4), new Float32Array(this.PARTICLE_COUNT * 4)];
+		var particleColors = new Float32Array(this.PARTICLE_COUNT );
 
-		for (var i = 0; i < PARTICLE_COUNT; i++)
+		for (var i = 0; i < this.PARTICLE_COUNT; i++)
 		{
 
 			particleVerts[i * 3 + 0] = 0; //x
 			particleVerts[i * 3 + 1] = 0; //y
-			particleVerts[i * 3 + 2] = i/PARTICLE_COUNT; //z
+			particleVerts[i * 3 + 2] = i/this.PARTICLE_COUNT; //z
 
 			particleColors[i] = i%2;
 
@@ -146,8 +146,8 @@ function makeGraphics(){
 		this.scene.add(exp_mesh);
 		this.scene.add( mesh );
 
-		this.envStartTime = 0; // a shitty hack
-		this.envLengthSeconds = 1.5;
+
+		this.exp_env = new LineEnv(1.5, 0, 1);
 		this.exp_geo.setDrawRange(0,1); //prevents rendering when idle
 
 		this.initState(); //set to state zero
@@ -184,11 +184,13 @@ function makeGraphics(){
 		this.exp_uniforms.time.value = ellapsedTime;
 
 		//this will be replaced with a linear envelope
-		this.exp_uniforms.env_time.value = Math.min(
-			1.0,
-			(ellapsedTime - this.envStartTime)/this.envLengthSeconds);
+		this.exp_uniforms.env_time.value = this.exp_env.update();
 
-
+		if(this.exp_env.value == 1.0)
+		{
+			this.exp_env.reset();
+			this.exp_geo.setDrawRange(0,1); //stop render
+		}
 
 		this.uniforms.time.value = ellapsedTime;
 		this.uniforms.mouse.value.copy(mousePos);
@@ -337,6 +339,7 @@ function makeGraphics(){
 
 	Graphics.prototype.explode = function(ellapsedTime)
 	{
-		this.envStartTime = ellapsedTime;
+		this.exp_env.trigger();
+		this.exp_geo.setDrawRange(0,this.PARTICLE_COUNT); //start rendering
 	}
 }

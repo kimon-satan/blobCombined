@@ -91,6 +91,47 @@ linexp = function(input, i_min, i_max, o_min, o_max, exp)
   return out;
 }
 
+/*--------------------------------------------------------------------------------------------*/
+
+LineEnv = function(dur, min, max){
+
+  //strictly timed linear envelope ... nothing more nothing less
+
+  this.value = min;
+  this.dur = dur;
+  this.min = min;
+  this.max = max;
+  this.isTriggered = false;
+  this.startTime = 0.0;
+
+  this.trigger = function(){
+    this.startTime = new Date().getTime()/1000;
+    this.value = min;
+    this.isTriggered = true;
+  }
+
+  this.update = function()
+  {
+    if(this.isTriggered)
+    {
+      var et = new Date().getTime()/1000;
+      var p = Math.min(1.0, (et - this.startTime)/this.dur );
+      this.value = linlin(p, 0.0, 1.0, this.min, this.max);
+      return this.value;
+    }
+    else
+    {
+      return this.min;
+    }
+  }
+
+  this.reset = function()
+  {
+      this.isTriggered = false;
+  }
+
+}
+
 /*------------------------------------------------ONE POLE -----------------------------------*/
 
 //for enveloping

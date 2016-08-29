@@ -104,7 +104,7 @@ function Interface(){
     this.stateIndex = 0;
     this.isChangingState = false; //false will pause the process
 
-    this.explodeEnvelope = new Envelope(3, 60);
+    this.explodeEnvelope = new Envelope(1, 60);
     this.explodeEnvelope.targetVal = 1.0;
     this.isExplodeOn = true;
 
