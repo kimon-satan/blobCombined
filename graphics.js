@@ -108,7 +108,7 @@ function makeGraphics(){
 
 
 		var PARTICLE_COUNT = 2000;
-		var exp_geo = new THREE.BufferGeometry();
+		this.exp_geo = new THREE.BufferGeometry();
 
 
 		var particleVerts = new Float32Array(PARTICLE_COUNT * 3);
@@ -133,21 +133,22 @@ function makeGraphics(){
 			}
 		}
 
-		exp_geo.addAttribute('position', new THREE.BufferAttribute(particleVerts, 3));
-		exp_geo.addAttribute('color_type', new THREE.BufferAttribute(particleColors, 1));
-		exp_geo.addAttribute('rand_vals', new THREE.BufferAttribute(randVals[0], 4));
-		exp_geo.addAttribute('rand_vals_2', new THREE.BufferAttribute(randVals[1], 4));
+		this.exp_geo.addAttribute('position', new THREE.BufferAttribute(particleVerts, 3));
+		this.exp_geo.addAttribute('color_type', new THREE.BufferAttribute(particleColors, 1));
+		this.exp_geo.addAttribute('rand_vals', new THREE.BufferAttribute(randVals[0], 4));
+		this.exp_geo.addAttribute('rand_vals_2', new THREE.BufferAttribute(randVals[1], 4));
 
 
 
 
-		var exp_mesh = new THREE.Points( exp_geo ,exp_material);
+		var exp_mesh = new THREE.Points( this.exp_geo ,exp_material);
 
 		this.scene.add(exp_mesh);
 		this.scene.add( mesh );
 
-		this.envStartTime = 0;
-		this.envLengthSeconds = 2.5;
+		this.envStartTime = 0; // a shitty hack
+		this.envLengthSeconds = 1.5;
+		this.exp_geo.setDrawRange(0,1); //prevents rendering when idle
 
 		this.initState(); //set to state zero
 		this.changeState();
@@ -181,11 +182,13 @@ function makeGraphics(){
 		this.uniforms.r_time.value += (delta * this.uniforms.r_freq.value);
 
 		this.exp_uniforms.time.value = ellapsedTime;
+
+		//this will be replaced with a linear envelope
 		this.exp_uniforms.env_time.value = Math.min(
 			1.0,
 			(ellapsedTime - this.envStartTime)/this.envLengthSeconds);
 
-		if(this.exp_uniforms.env_time.value  == 1.0)this.envStartTime = ellapsedTime;
+
 
 		this.uniforms.time.value = ellapsedTime;
 		this.uniforms.mouse.value.copy(mousePos);
@@ -332,4 +335,8 @@ function makeGraphics(){
 		}
 	}
 
+	Graphics.prototype.explode = function(ellapsedTime)
+	{
+		this.envStartTime = ellapsedTime;
+	}
 }

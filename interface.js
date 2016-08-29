@@ -104,7 +104,7 @@ function Interface(){
     this.stateIndex = 0;
     this.isChangingState = false; //false will pause the process
 
-    this.explodeEnvelope = new Envelope(10, 60);
+    this.explodeEnvelope = new Envelope(3, 60);
     this.explodeEnvelope.targetVal = 1.0;
     this.isExplodeOn = true;
 
@@ -386,11 +386,7 @@ function Interface(){
       if(this.isExplodeOn)
       {
         this.graphics.updateExplosion(this.explodeEnvelope);
-        if(this.explodeEnvelope.z > 0.99)
-        {
-          console.log("bang");
-          this.explodeEnvelope.z = 0.0;
-        }
+
       }
 
       // ultimately we don't need mousePos
@@ -405,7 +401,16 @@ function Interface(){
   this.updateState = function()
   {
 
-    if(this.isExplodeOn)this.explodeEnvelope.step();
+    if(this.isExplodeOn)
+    {
+      this.explodeEnvelope.step();
+      if(this.explodeEnvelope.z > 0.99)
+      {
+        console.log("bang");
+        this.graphics.explode(this.ellapsedTime);
+        this.explodeEnvelope.z = 0.0;
+      }
+    }
 
     if(this.changingState){
 
